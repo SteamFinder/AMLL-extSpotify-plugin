@@ -320,7 +320,7 @@ export const SettingPage = () => {
                     <Flex direction="column" flexGrow="1">
                         <Text as="div">Access Token</Text>
                         <Text as="div" color="gray" size="2" >
-                            在Spotify平台设置的 callback 地址
+                            从Redirect Url中获取的Access Token (需手动复制)
                         </Text>
                     </Flex>
                     <TextField.Root
