@@ -281,7 +281,7 @@ export const SettingPage = () => {
 
             <SwitchSettings
                 label={"启用Spotify Player API"}
-                description={"开启后可以同步Spotify播放的歌曲, 请先开启再同步状态"}
+                description={"开启后可以同步Spotify播放的歌曲。由于当前插件接口限制, 需要开启本页面才能正常挂载数据"}
                 configAtom={extSpotifySwitchAtom}
             />
 
