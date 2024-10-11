@@ -127,6 +127,7 @@ declare global {
 		declare const React: import("react");
 		declare const ReactDOM: import("react-dom");
 		declare const Jotai: import("jotai");
+		declare const JotaiUtils: import("jotai/utils");
 		declare const RadixTheme: import("@radix-ui/themes");
 	}
 }

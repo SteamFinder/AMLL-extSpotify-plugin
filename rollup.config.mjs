@@ -1,6 +1,7 @@
 import json from "@rollup/plugin-json";
 import typescript from "@rollup/plugin-typescript";
 import { minify } from "rollup-plugin-esbuild";
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { defineConfig } from "rollup";
 import packageJson from "./package.json" with { type: "json" };
 
@@ -43,8 +44,15 @@ export default defineConfig({
             "@radix-ui/themes": "RadixTheme",
         }
     },
+    onwarn(warning, warn) {
+        // Suppress "Module level directives cause errors when bundled" warnings
+        if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+            return;
+        }
+        warn(warning);
+    },
     external: ["react", "react/jsx-runtime", "react-dom", "jotai", "@radix-ui/themes"],
-    plugins: [json(), typescript(), isProduction && minify({
+    plugins: [nodeResolve(), json(), typescript(), isProduction && minify({
         banner: banner.join("\n"),
     })]
 });
