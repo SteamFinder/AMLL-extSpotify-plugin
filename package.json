@@ -1,6 +1,6 @@
 {
   "name": "io.steamfinder.extspotify",
-  "version": "0.0.1",
+  "version": "1.0.0-beta",
   "license": "MIT",
   "scripts": {
     "build:dev": "rollup -c",
@@ -12,7 +12,7 @@
     "name:en-US": "extSpotify",
     "name:zh-CN": "extSpotify",
     "dependency": [],
-    "icon": "https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/logo.svg"
+    "icon": "https://cf.ghproxy.cc/https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/logo.svg"
   },
   "devDependencies": {
     "@radix-ui/themes": "^3.1.4",
