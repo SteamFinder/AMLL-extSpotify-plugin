@@ -137,7 +137,7 @@ export const SettingPage = () => {
         consoleLog("INFO", "settings", "检查更新中");
         try {
             const updateInfosResponse = await fetch(
-                extSpotifyProxy + "https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/static/version.json",
+                "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin@main/src/static/version.json",
                 {
                     method: "GET",
                 },
@@ -149,11 +149,12 @@ export const SettingPage = () => {
                 setExtsportifyMinApi(extVerInfos.minApi);
                 setExtsportifyUpdTime(extVerInfos.updTime);
                 setExtsportifyOnlineVer(updateInfos.extVer);
+                consoleLog("INFO", "settings", "检查更新成功");
             } else {
-                consoleLog("INFO", "settings", "检测更新失败");
+                consoleLog("INFO", "settings", "检查更新失败");
             }
         } catch (error) {
-            consoleLog("INFO", "settings", "检测更新失败");
+            consoleLog("INFO", "settings", "检查更新失败");
         }
     }
 

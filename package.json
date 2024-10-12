@@ -1,6 +1,6 @@
 {
   "name": "io.steamfinder.extspotify",
-  "version": "2.1-beta-v1",
+  "version": "2.3-beta-v1",
   "license": "MIT",
   "scripts": {
     "build:dev": "rollup -c",
