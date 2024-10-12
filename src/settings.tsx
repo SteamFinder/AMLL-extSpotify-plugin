@@ -167,6 +167,7 @@ export const SettingPage = () => {
 
     // 通过 OAuth2.0 获取 Access Token
     function setExtSpotifyCallbackUrlFunc(url: string) {
+        setExtSpotifyCallbackUrl(url);
         const accessTokenMatch = url.match(/access_token=([^&]*)/);
         if (accessTokenMatch) {
             setExtSpotifyAccessToken(accessTokenMatch[1]);
