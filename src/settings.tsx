@@ -1,98 +1,114 @@
-/**
- * @fileoverview
- * 所有有关 extSpotify 组件中用户可配置的状态都在这里
- * 如无特殊注明，此处所有配置均会被存储在 localStorage 中
- */
-
 import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
 import {
-	type ComponentProps,
-	type FC,
-	type PropsWithChildren,
-	type ReactNode,
-	Suspense, useEffect,
-	useLayoutEffect,
-	useMemo,
-	useState,
+    type ComponentProps,
+    type FC,
+    type PropsWithChildren,
+    type ReactNode,
+    Suspense, useEffect,
+    useLayoutEffect,
+    useMemo,
+    useState,
 } from "react";
 import {
-	Box,
-	Button,
-	Card,
-	Container,
-	Flex,
-	Select,
-	Separator,
-	Slider,
-	type SliderProps,
-	Switch,
-	type SwitchProps,
-	Text,
-	TextField,
-	type TextProps,
+    Badge,
+    Button,
+    Card,
+    Container,
+    Flex,
+    DataList,
+    Code,
+    Switch,
+    type SwitchProps,
+    Text,
+    TextField,
+    type TextProps,
 } from "@radix-ui/themes";
-import { parseTTML } from "./amll-core-src/lyric/ttml";
+import chalk from "chalk";
+import extVerInfos from "./static/version.json";
+
+// ======================== extSpotify setLog ========================
+
+const WARN_TAG = chalk.bgHex("#FFAA00").hex("#FFFFFF")(" WARN ");
+const INFO_TAG = chalk.bgHex("#FF7700").hex("#FFFFFF")(" INFO ");
+const NAME_TAG = chalk.bgHex("#1ed760").hex("#FFFFFF")(" extSpotify ");
+
+export function consoleLog(type: string, func: string, info: string) {
+
+    if (type === "INFO") {
+        console.log(NAME_TAG + INFO_TAG, func + "::" + info)
+
+    } else if (type === "WARN") {
+        console.log(NAME_TAG + WARN_TAG, func + "::" + info)
+
+    } else if (type === "LOG") {
+        console.log(NAME_TAG + NAME_TAG, func + "::" + info)
+
+    } else {
+        console.log(NAME_TAG + WARN_TAG, func + "::" + info)
+    }
+
+}
 
 // ======================== extSpotify ========================
 
 export const SettingPage = () => {
 
-// ======================== extSpotify 挂载 ========================
+    // ======================== extSpotify 挂载 ========================
 
-	// load
-	useEffect(() => {
-		console.log("SettingPage Loaded");
-	}, []);
+    // load
+    useEffect(() => {
+        console.log("SettingPage Loaded");
+    }, []);
 
-// ======================== extSpotify 前置组件 ========================
+    // ======================== extSpotify 前置组件 ========================
 
-	// settings components
-	const SettingEntry: FC<
-		PropsWithChildren<{
-			label: string;
-			description?: string;
-		}>
-	> = ({ label, description, children }) => {
-		return (
-			<Card mt="2">
-				<Flex direction="row" align="center" gap="4">
-					<Flex direction="column" flexGrow="1">
-						<Text as="div">{label}</Text>
-						<Text as="div" color="gray" size="2">
-							{description}
-						</Text>
-					</Flex>
-					{children}
-				</Flex>
-			</Card>
-		);
-	};
+    // settings components
+    const SettingEntry: FC<
+        PropsWithChildren<{
+            label: string;
+            description?: string;
+        }>
+    > = ({ label, description, children }) => {
+        return (
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">{label}</Text>
+                        <Text as="div" color="gray" size="2">
+                            {description}
+                        </Text>
+                    </Flex>
+                    {children}
+                </Flex>
+            </Card>
+        );
+    };
 
-	const SubTitle: FC<PropsWithChildren<TextProps>> = ({ children, ...props }) => {
-		return (
-			<Text weight="bold" size="4" my="4" as="div" {...props}>
-				{children}
-			</Text>
-		);
-	};
+    const SubTitle: FC<PropsWithChildren<TextProps>> = ({ children, ...props }) => {
+        return (
+            <Text weight="bold" size="4" my="4" as="div" {...props}>
+                {children}
+            </Text>
+        );
+    };
 
-	const SwitchSettings: FC<
-		{
-			configAtom: WritableAtom<boolean, [boolean], void>;
-		} & ComponentProps<typeof SettingEntry> &
-		Omit<SwitchProps, "value" | "onChange">
-	> = ({ label, description, configAtom }) => {
-		const [value, setValue] = useAtom(configAtom);
+    const SwitchSettings: FC<
+        {
+            configAtom: WritableAtom<boolean, [boolean], void>;
+        } & ComponentProps<typeof SettingEntry> &
+        Omit<SwitchProps, "value" | "onChange">
+    > = ({ label, description, configAtom }) => {
+        const [value, setValue] = useAtom(configAtom);
 
-		return (
-			<SettingEntry label={label} description={description}>
-				<Switch checked={value} onCheckedChange={setValue} />
-			</SettingEntry>
-		);
-	};
+        return (
+            <SettingEntry label={label} description={description}>
+                <Switch checked={value} onCheckedChange={setValue} />
+            </SettingEntry>
+        );
+    };
 
-// ======================== extSpotify ========================
+    // ======================== extSpotify ========================
 
     // Reg
     const [extSpotifySwitch, setExtSpotifySwitch] = useAtom(extSpotifySwitchAtom);
@@ -107,27 +123,54 @@ export const SettingPage = () => {
         extSpotifyAccessTokenAtom,
     );
     const [extSpotifyDelay, setExtSpotifyDelay] = useAtom(extSpotifyDelayAtom);
-
-    // Playing
-    const [musicCover, setMusicCover] = useAtom(pluginContext.amllStates.musicCoverAtom);
-    const [musicDuration, setMusicDuration] = useAtom(pluginContext.amllStates.musicDurationAtom);
-    const [musicName, setMusicName] = useAtom(pluginContext.amllStates.musicNameAtom);
-    const [musicPlayingPosition, setMusicPlayingPosition] = useAtom(
-        pluginContext.amllStates.musicPlayingPositionAtom,
-    );
-    const [musicPlaying, setMusicPlaying] = useAtom(pluginContext.amllStates.musicPlayingAtom);
-    const [musicAlbumName, setMusicAlbumName] = useAtom(pluginContext.amllStates.musicAlbumNameAtom);
-    const [musicArtists, setMusicArtists] = useAtom(pluginContext.amllStates.musicArtistsAtom);
-    const [musicLyricLines, setMusicLyricLines] = useAtom(pluginContext.amllStates.musicLyricLinesAtom);
-    const [hideLyricView, setHideLyricView] = useAtom(pluginContext.amllStates.hideLyricViewAtom);
-	const [musicContextMode, setMusicContextMode] = useAtom(pluginContext.playerStates.musicContextModeAtom);
-    const [fetching, setFetching] = useState(false);
-    // hideLyricViewAtom,
-    // isLyricPageOpenedAtom,
+    const [extSpotifyProxy, setExtSpotifyProxy] = useAtom(extSpotifyProxyAtom);
+    const [extSpotifyVer, setExtsportifyVer] = useState("unknown extSpotifyVer");
+    const [extSpotifyOnlineVer, setExtsportifyOnlineVer] = useState("unknown extSpotifyOnlineVer");
+    const [extSpotifyChannel, setExtsportifyChannel] = useState("unknown extSpotifyChannel");
+    const [extSpotifyMinApi, setExtsportifyMinApi] = useState("unknown extSpotifyMinApi");
+    const [extSpotifyUpdTime, setExtsportifyUpdTime] = useState("unknown extSpotifyUpdTime");
 
     const accessToken = extSpotifyAccessToken;
 
+    // 检查更新信息
+    async function checkUpdate() {
+        consoleLog("INFO", "settings", "检查更新中");
+        try {
+            const updateInfosResponse = await fetch(
+                extSpotifyProxy + "https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/static/logo.svg",
+                {
+                    method: "GET",
+                },
+            );
+            if (updateInfosResponse.status === 200) {
+                const updateInfos = await updateInfosResponse.json();
+                setExtsportifyVer(extVerInfos.extVer);
+                setExtsportifyChannel(extVerInfos.extChannel);
+                setExtsportifyMinApi(extVerInfos.minApi);
+                setExtsportifyUpdTime(extVerInfos.updTime);
+                setExtsportifyOnlineVer(updateInfos.extVer);
+            } else {
+                consoleLog("INFO", "settings", "检测更新失败");
+            }
+        } catch (error) {
+            consoleLog("INFO", "settings", "检测更新失败");
+        }
+    }
+
+    useEffect(() => {
+        checkUpdate();
+    }, []);
+
     // 通过 OAuth2.0 获取 Access Token
+    function setExtSpotifyCallbackUrl(url: string) {
+        const accessTokenMatch = url.match(/access_token=([^&]*)/);
+        if (accessTokenMatch) {
+            setExtSpotifyAccessToken(accessTokenMatch[1]);
+        } else {
+            consoleLog("INFO", "settings", "未从Callback URL中匹配到AccessToken");
+        }
+    }
+
     function getAuth() {
         var client_id = extSpotifyClientID;
         var redirect_uri = extSpotifyRedirectUrl;
@@ -143,145 +186,61 @@ export const SettingPage = () => {
         window.open(url);
     }
 
-    // 轮询 SpotifyAPI
-
-    // 防止重复使用钩子
-    var oldMusicID = "";
-    var oldIsPlaying = false;
-
-    async function getCurrentPlayingTrack(accessToken: string) {
-        const response = await fetch(
-            "https://api.spotify.com/v1/me/player/currently-playing",
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            },
-        );
-
-        if (response.status === 200) {
-            const jsonData = await response.json();
-            console.log("extSpotify::从SpotifyAPI读取数据成功");
-
-            // 获取歌词
-            if (oldMusicID != jsonData.item.id) {
-                oldMusicID = jsonData.item.id;
-
-                setMusicCover(jsonData.item.album.images[0].url);
-                setMusicDuration(jsonData.item.duration_ms);
-                setMusicName(jsonData.item.name);
-                setMusicAlbumName(jsonData.item.album.name);
-                const MusicArtistsInfo = {
-                    name: jsonData.item.artists[0].name,
-                    id: jsonData.item.artists[0].id,
-                };
-                setMusicArtists([MusicArtistsInfo]);
-
-                try {
-                    const lyricsResponse = await fetch(
-                        "https://raw.githubusercontent.com/Steve-xmh/amll-ttml-db/refs/heads/main/spotify-lyrics/" +
-                        jsonData.item.id +
-                        ".ttml",
-                        {
-                            method: "GET",
-                        },
-                    );
-                    if (lyricsResponse.status === 200) {
-                        // 获取到歌词后进行转换
-                        const lyricsData = await lyricsResponse.text();
-                        const parsedResult = parseTTML(lyricsData);
-						// const parsedResult = parseTTML(lyricsData).lines;
-                        setHideLyricView(false);
-                        setMusicLyricLines(parsedResult);
-                    } else {
-                        setHideLyricView(true);
-                        setMusicLyricLines([]);
-                        console.log("extSoptify::Github-未搜索到/Proxy-未尝试");
-                    }
-                } catch (error) {
-                    // 未获取到歌词时设置为空
-                    console.log("extSpotify::Github-访问失败/Proxy-未尝试")
-                    try {
-                        const lyricsProxyResponse = await fetch(
-                            "https://cf.ghproxy.cc/" +
-                            "https://raw.githubusercontent.com/Steve-xmh/amll-ttml-db/refs/heads/main/spotify-lyrics/" +
-                            jsonData.item.id +
-                            ".ttml",
-                            {
-                                method: "GET",
-                            },
-                        );
-                        if (lyricsProxyResponse.status === 200) {
-                            const lyricsProxyData = await lyricsProxyResponse.text();
-                            const parsedProxyResult = parseTTML(lyricsProxyData);
-							// const parsedResult = parseTTML(lyricsData).lines;
-                            setHideLyricView(false);
-                            setMusicLyricLines(parsedProxyResult);
-                        } else {
-                            setHideLyricView(true);
-                            setMusicLyricLines([]);
-                            console.log("extSoptify::Github-访问失败/Proxy-未搜索到");
-                        }
-                    } catch (error) {
-                        setHideLyricView(true);
-                        setMusicLyricLines([]);
-                        console.log("extSpotify::Github-访问失败/Proxy-访问失败")
-                    }
-                }
-            }
-
-            // 刷新进度条 由于延迟 进行 50ms 的补偿
-            setMusicPlayingPosition(jsonData.progress_ms + 50);
-            // 判断是否在播放 同时注意不要循环调用钩子
-
-            if (jsonData.is_playing && !oldIsPlaying) {
-                setMusicPlaying(true);
-                oldIsPlaying = true;
-            } else if (!jsonData.is_playing && oldIsPlaying) {
-                setMusicPlaying(false);
-                oldIsPlaying = false;
-            }
-
-        } else if (response.status === 204) {
-            console.log("extSpotify::当前未播放歌曲");
-            setMusicPlaying(false);
-            return null;
-        } else {
-            console.error("extSpotify::无法从SpotifyAPI读取数据", response.status);
-            return null;
-        }
-    }
-
-    // 修复轮询在 Android 设备上的问题
-    useEffect(() => {
-        console.log("extSpotifySwitch::检测到功能开关变化");
-        console.log(extSpotifySwitch);
-		
-        if (extSpotifySwitch) {
-
-			// 接管Player
-			console.log("extSpotifySwitch::接管Player");
-			setMusicContextMode("extSpotify");
-
-            const intervalId = setInterval(() => {
-                getCurrentPlayingTrack(accessToken);
-            }, extSpotifyInterval); // 每0.5秒调用一次
-
-            return () => clearInterval(intervalId); // 清除定时器
-        }
-    }, [extSpotifySwitch]);
-
-// ======================== extSpotify界面 ========================
-	return (
-		<>
+    // ======================== extSpotify界面 ========================
+    return (
+        <>
             {/* 扩展 Spotify BEGIN */}
 
             <SubTitle>extSpotify 设置</SubTitle>
 
+            <Card mt="2">
+                <DataList.Root>
+                    <DataList.Item align="center">
+                        <DataList.Label minWidth="88px">Channel</DataList.Label>
+                        <DataList.Value>
+                            <Badge color="jade" variant="soft" radius="full">
+                                {extSpotifyChannel}
+                            </Badge>
+                        </DataList.Value>
+                    </DataList.Item>
+                    <DataList.Item>
+                        <DataList.Label minWidth="88px">版本</DataList.Label>
+                        <DataList.Value>
+                            <Flex align="center" gap="2">
+                                <Code variant="ghost">{extSpotifyVer}</Code>
+                            </Flex>
+                        </DataList.Value>
+                    </DataList.Item>
+                    <DataList.Item>
+                        <DataList.Label minWidth="88px">最新版本</DataList.Label>
+                        <DataList.Value>
+                            <Flex align="center" gap="2">
+                                <Code variant="ghost">{extSpotifyOnlineVer}</Code>
+                            </Flex>
+                        </DataList.Value>
+                    </DataList.Item>
+                    <DataList.Item>
+                        <DataList.Label minWidth="88px">最低兼容API</DataList.Label>
+                        <DataList.Value>
+                            <Flex align="center" gap="2">
+                                <Code variant="ghost">{extSpotifyMinApi}</Code>
+                            </Flex>
+                        </DataList.Value>
+                    </DataList.Item>
+                    <DataList.Item>
+                        <DataList.Label minWidth="88px">构建时间</DataList.Label>
+                        <DataList.Value>
+                            <Flex align="center" gap="2">
+                                <Code variant="ghost">{extSpotifyUpdTime}</Code>
+                            </Flex>
+                        </DataList.Value>
+                    </DataList.Item>
+                </DataList.Root>
+            </Card>
+
             <SwitchSettings
                 label={"启用Spotify Player API"}
-                description={"开启后可以同步Spotify播放的歌曲。由于当前插件接口限制, 需要开启本页面才能正常挂载数据"}
+                description={"开启后可以同步Spotify播放的歌曲"}
                 configAtom={extSpotifySwitchAtom}
             />
 
@@ -303,9 +262,9 @@ export const SettingPage = () => {
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
-                        <Text as="div">Redirect Url</Text>
+                        <Text as="div">Redirect URL</Text>
                         <Text as="div" color="gray" size="2" >
-                            从开发者平台设置的 Redirect Url
+                            从开发者平台设置的 Redirect URL
                         </Text>
                     </Flex>
                     <TextField.Root
@@ -318,14 +277,14 @@ export const SettingPage = () => {
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
-                        <Text as="div">Access Token</Text>
+                        <Text as="div">Callback URL</Text>
                         <Text as="div" color="gray" size="2" >
-                            从Redirect Url中获取的Access Token (需手动复制)
+                            请把登录后返回的Callback URL粘贴至此处, 将会自动解析Access Token
                         </Text>
                     </Flex>
                     <TextField.Root
                         value={extSpotifyAccessToken}
-                        onChange={(e) => setExtSpotifyAccessToken(e.currentTarget.value)}
+                        onChange={(e) => setExtSpotifyCallbackUrl(e.currentTarget.value)}
                     />
                 </Flex>
             </Card>
@@ -365,32 +324,28 @@ export const SettingPage = () => {
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
-                        <Text as="div">歌曲封面设置</Text>
+                        <Text as="div">Github Proxy URL</Text>
                         <Text as="div" color="gray" size="2" >
-                            在此测试设置封面图
+                            设置后可以提高资源加载速度, 需加/, 例如https://example.com/
                         </Text>
                     </Flex>
                     <TextField.Root
-                        value={musicCover}
-                        onChange={(e) => setMusicCover(e.currentTarget.value)}
+                        value={extSpotifyProxy}
+                        onChange={(e) => setExtSpotifyProxy(e.currentTarget.value)}
                     />
                 </Flex>
             </Card>
-
-            <Button my="2" onClick={() => getCurrentPlayingTrack(accessToken)}>
-                同步播放状态
-            </Button>
 
             <Button m="2" onClick={() => getAuth()}>
                 登录Spotify
             </Button>
 
-			<Text as="div">extSpotify测试版, 可能存在诸多Bug, 欢迎反馈</Text>
-			<Text as="div">Powered by AMLL Player Extension Platform</Text>
+            <Text as="div">extSpotify测试版, 可能存在诸多Bug, 欢迎反馈</Text>
+            <Text as="div">Powered by AMLL Player Extension Platform</Text>
 
             {/* Spotify END */}
-		</>
-	)
+        </>
+    )
 }
 
 // ======================== extSpotify配置 Atom ========================
@@ -399,65 +354,72 @@ export const SettingPage = () => {
  * 是否启用Spotify功能 默认关闭
  */
 export const extSpotifySwitchAtom = atomWithStorage(
-	"extSpotifyswitchAtom",
-	false,
+    "extSpotifyswitchAtom",
+    false,
 );
 
 /**
  * Spotify开发者平台上设置的Client ID
  */
 export const extSpotifyClientIDAtom = atomWithStorage(
-	"extSpotifyClientIDAtom",
-	"ClientID",
+    "extSpotifyClientIDAtom",
+    "ClientID",
 );
 
 /**
  * Spotify开发者平台上设置的Callback Url
  */
 export const extSpotifyRedirectUrlAtom = atomWithStorage(
-	"extSpotifyRedirectUrlAtom",
-	"http://localhost:8888/callback",
+    "extSpotifyRedirectUrlAtom",
+    "http://localhost:8888/callback",
 );
 
 /**
  * Spotify API所需的Access Token
  */
 export const extSpotifyAccessTokenAtom = atomWithStorage(
-	"extSpotifyAccessTokenAtom",
-	"AccessToken",
+    "extSpotifyAccessTokenAtom",
+    "AccessToken",
 );
 
 /**
  * Spotify API轮询间隔 默认500(ms)
  */
 export const extSpotifyIntervalAtom = atomWithStorage(
-	"extSpotifyIntervalAtom",
-	800,
+    "extSpotifyIntervalAtom",
+    800,
 );
 /**
  * Spotify API时间轴修正 默认100(ms)
  */
 export const extSpotifyDelayAtom = atomWithStorage(
-	"extSpotifyDelayAtom",
-	100,
+    "extSpotifyDelayAtom",
+    100,
+);
+/**
+ * Github Proxy
+ */
+export const extSpotifyProxyAtom = atomWithStorage(
+    "extSpotifyProxyAtom",
+    "https://cf.ghproxy.cc/",
 );
 
 // ======================== extSpotify 使用的Player Atom ========================
 
 /*
-	fftDataAtom,
-	hideLyricViewAtom,
-	isLyricPageOpenedAtom,
-	lowFreqVolumeAtom,
-	musicAlbumNameAtom,
-	musicArtistsAtom,
-	musicCoverAtom,
-	musicCoverIsVideoAtom,
-	musicDurationAtom,
-	musicLyricLinesAtom,
-	musicNameAtom,
-	musicPlayingAtom,
-	musicPlayingPositionAtom,
-	musicQualityTagAtom,
-	musicVolumeAtom,
+    fftDataAtom,
+    hideLyricViewAtom,
+    isLyricPageOpenedAtom,
+    lowFreqVolumeAtom,
+    musicAlbumNameAtom,
+    musicArtistsAtom,
+    musicCoverAtom,
+    musicCoverIsVideoAtom,
+    musicDurationAtom,
+    musicLyricLinesAtom,
+    musicNameAtom,
+    musicPlayingAtom,
+    musicPlayingPositionAtom,
+    musicQualityTagAtom,
+    musicVolumeAtom,
 */

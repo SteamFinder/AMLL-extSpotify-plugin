@@ -1,6 +1,6 @@
 {
   "name": "io.steamfinder.extspotify",
-  "version": "1.0.1-beta",
+  "version": "2.0-beta-v1",
   "license": "MIT",
   "scripts": {
     "build:dev": "rollup -c",
@@ -12,19 +12,26 @@
     "name:en-US": "extSpotify",
     "name:zh-CN": "extSpotify",
     "dependency": [],
-    "icon": "https://cf.ghproxy.cc/https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/logo.svg"
+    "icon": "https://cf.ghproxy.cc/https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/static/logo.svg"
   },
   "devDependencies": {
+    "@applemusic-like-lyrics/lyric": "^0.2.4",
     "@radix-ui/themes": "^3.1.4",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-typescript": "^12.1.0",
     "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "dexie": "^4.0.8",
     "esbuild": "^0.24.0",
+    "i18next": "^23.15.2",
     "jotai": "^2.10.0",
     "rollup": "^4.24.0",
     "rollup-plugin-esbuild": "^6.1.1",
     "tslib": "^2.7.0",
     "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0"
   }
 }

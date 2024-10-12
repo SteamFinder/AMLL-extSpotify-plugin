@@ -5,6 +5,7 @@
         "jsx": "react-jsx",
         "jsxImportSource": "react",
         "module": "ESNext",
+        "resolveJsonModule": true,
     },
     "include": ["src"]
 }

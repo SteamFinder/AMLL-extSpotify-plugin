@@ -1,31 +1,15 @@
-import { SettingPage } from "./settings";
+import { ExtensionContext } from "./context";
+import { SettingPage, consoleLog } from "./settings";
 
-pluginContext.registerSettingPage(SettingPage);
+extensionContext.registerComponent("settings", SettingPage);
+extensionContext.registerComponent("context", ExtensionContext);
 
-pluginContext.addEventListener("plugin-load", () => {
-    console.log("extSpotify plugin loaded");
-    console.log(pluginContext.playerStates);
-    console.log(pluginContext.amllStates);
-    console.log(pluginContext.amllStates.musicNameAtom);
-
-    // const [musicName, setMusicName] = useAtom(pluginContext.amllStates.musicNameAtom);
-    // setMusicName("你好世界");
-
-/*
-    const [MusicContextMode, pluginContext.playerStates.MusicContextMode;
-    const [hideLyricViewAtom, pluginContext.amllStates.
-    const [musicAlbumNameAtom,
-    const [musicArtistsAtom,
-    const [musicCoverAtom,
-    const [musicDurationAtom,
-    const [musicLyricLinesAtom,
-    const [musicNameAtom,
-    const [musicPlayingAtom,
-    const [musicPlayingPositionAtom,
-    */
-
+extensionContext.addEventListener("extension-load", () => {
+    consoleLog("INFO","index","加载成功");
+    console.log(extensionContext.playerStates);
+    console.log(extensionContext.amllStates);
 });
 
-pluginContext.addEventListener("plugin-unload", () => {
-    console.log("extSpotify plugin unloaded");
+extensionContext.addEventListener("extension-unload", () => {
+    consoleLog("INFO","index","卸载成功");
 });
