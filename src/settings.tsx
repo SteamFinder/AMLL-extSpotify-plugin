@@ -122,6 +122,9 @@ export const SettingPage = () => {
     const [extSpotifyAccessToken, setExtSpotifyAccessToken] = useAtom(
         extSpotifyAccessTokenAtom,
     );
+    const [extSpotifyCallbackUrl, setExtSpotifyCallbackUrl] = useAtom(
+        extSpotifyCallbackUrlAtom
+    )
     const [extSpotifyDelay, setExtSpotifyDelay] = useAtom(extSpotifyDelayAtom);
     const [extSpotifyProxy, setExtSpotifyProxy] = useAtom(extSpotifyProxyAtom);
     const [extSpotifyVer, setExtsportifyVer] = useState("unknown extSpotifyVer");
@@ -163,12 +166,13 @@ export const SettingPage = () => {
     }, []);
 
     // 通过 OAuth2.0 获取 Access Token
-    function setExtSpotifyCallbackUrl(url: string) {
+    function setExtSpotifyCallbackUrlFunc(url: string) {
         const accessTokenMatch = url.match(/access_token=([^&]*)/);
         if (accessTokenMatch) {
             setExtSpotifyAccessToken(accessTokenMatch[1]);
         } else {
             consoleLog("INFO", "settings", "未从Callback URL中匹配到AccessToken");
+            setExtSpotifyAccessToken("unknown-access-token");
         }
     }
 
@@ -284,8 +288,24 @@ export const SettingPage = () => {
                         </Text>
                     </Flex>
                     <TextField.Root
+                        value={extSpotifyCallbackUrl}
+                        onChange={(e) => setExtSpotifyCallbackUrlFunc(e.currentTarget.value)}
+                    />
+                </Flex>
+            </Card>
+
+            
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4" my="2">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">AccessToken</Text>
+                        <Text as="div" color="gray" size="2" >
+                            可手动填写, 也可通过Callback URL自动解析
+                        </Text>
+                    </Flex>
+                    <TextField.Root
                         value={extSpotifyAccessToken}
-                        onChange={(e) => setExtSpotifyCallbackUrl(e.currentTarget.value)}
+                        onChange={(e) => setExtSpotifyAccessToken(e.currentTarget.value)}
                     />
                 </Flex>
             </Card>
@@ -381,6 +401,14 @@ export const extSpotifyRedirectUrlAtom = atomWithStorage(
 export const extSpotifyAccessTokenAtom = atomWithStorage(
     "extSpotifyAccessTokenAtom",
     "AccessToken",
+);
+
+/**
+ * 粘贴的Callback URL
+ */
+export const extSpotifyCallbackUrlAtom = atomWithStorage(
+    "extSpotifyCallbackUrlAtom",
+    "CallbackURL",
 );
 
 /**
