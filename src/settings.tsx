@@ -137,7 +137,7 @@ export const SettingPage = () => {
         consoleLog("INFO", "settings", "检查更新中");
         try {
             const updateInfosResponse = await fetch(
-                extSpotifyProxy + "https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/static/logo.svg",
+                extSpotifyProxy + "https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/static/version.json",
                 {
                     method: "GET",
                 },
