@@ -188,6 +188,7 @@ export const ExtensionContext: FC = () => {
                 };
                 setMusicArtists([MusicArtistsInfo]);
                 setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
+                interpolationData.splice(0, interpolationData.length);
 
                 const parsedResult = readTTMLDB(jsonData.item.id, jsonData.item.name, jsonData.item.artists[0].name)
                 if ((await parsedResult).length === 0) {
