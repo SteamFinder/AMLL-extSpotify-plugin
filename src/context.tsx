@@ -6,7 +6,8 @@ import {
     extSpotifyAccessTokenAtom,
     extSpotifyClientIDAtom,
     extSpotifyDelayAtom,
-    extSpotifyRedirectUrlAtom
+    extSpotifyRedirectUrlAtom,
+    extSpotifyDelaySwitchAtom
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
@@ -30,6 +31,7 @@ export const ExtensionContext: FC = () => {
         extSpotifyAccessTokenAtom,
     );
     const [extSpotifyDelay, setExtSpotifyDelay] = useAtom(extSpotifyDelayAtom);
+    const [extSpotifyDelaySwitch, setExtSpotifyDelaySwitch] = useAtom(extSpotifyDelaySwitchAtom);
 
     // Playing
     const [musicCover, setMusicCover] = useAtom<string>(extensionContext.amllStates.musicCoverAtom);
@@ -49,9 +51,7 @@ export const ExtensionContext: FC = () => {
     const accessToken = extSpotifyAccessToken;
 
     // 从TTML DB读取歌词信息
-    const [perfectMatch, setPerfectMatch] = useState(false);
     async function readTTMLDB(id: string, name: string, artist: string) {
-        setPerfectMatch(false);
         const word = name.trim();
         if (word.length > 0) {
             let pattern: string | RegExp = word.toLowerCase();
@@ -132,6 +132,10 @@ export const ExtensionContext: FC = () => {
     var oldIsPlaying = false;
 
     async function getCurrentPlayingTrack(accessToken: string) {
+
+        // 自动修正时间点 起点
+        const startTime = Date.now();
+
         const response = await fetch(
             "https://api.spotify.com/v1/me/player/currently-playing",
             {
@@ -143,6 +147,15 @@ export const ExtensionContext: FC = () => {
         );
 
         if (response.status === 200) {
+
+            // 自动修正时间点 终点
+            const endTime = Date.now();
+            // Http Fetch Delay
+            const latency = endTime - startTime;
+            if(extSpotifyDelaySwitch){
+                setExtSpotifyDelay(latency);
+            }
+
             const jsonData = await response.json();
             consoleLog("INFO", "context", "从SpotifyAPI读取数据成功");
 
@@ -170,8 +183,9 @@ export const ExtensionContext: FC = () => {
                 }
             }
 
-            // 刷新进度条 由于延迟 进行 50ms 的补偿
+            // 刷新进度条 由于延迟 进行补偿
             setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
+
             // 判断是否在播放 同时注意不要循环调用钩子
 
             if (jsonData.is_playing && !oldIsPlaying) {
@@ -207,11 +221,11 @@ export const ExtensionContext: FC = () => {
 
             const intervalId = setInterval(() => {
                 getCurrentPlayingTrack(accessToken);
-            }, extSpotifyInterval); // 每0.5秒调用一次
+            }, extSpotifyInterval);
 
             return () => clearInterval(intervalId); // 清除定时器
         }
-    }, [extSpotifySwitch, extSpotifyDelay, accessToken]);
+    }, [extSpotifySwitch, accessToken]);
 
     useEffect(() => {
         consoleLog("INFO", "context", "挂载成功");

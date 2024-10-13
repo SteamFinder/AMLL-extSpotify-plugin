@@ -245,6 +245,8 @@ export const SettingPage = () => {
                 </DataList.Root>
             </Card>
 
+            <SubTitle>Spotify API</SubTitle>
+
             <SwitchSettings
                 label={"启用Spotify Player API"}
                 description={"开启后可以同步Spotify播放的歌曲"}
@@ -312,6 +314,14 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
+            <SubTitle>extSpotify 扩展行为</SubTitle>
+
+            <SwitchSettings
+                label={"启用时间轴自动修正"}
+                description={"开启后可以自动管理时间轴修正"}
+                configAtom={extSpotifyDelaySwitchAtom}
+            />
+
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
@@ -377,8 +387,16 @@ export const SettingPage = () => {
  * 是否启用Spotify功能 默认关闭
  */
 export const extSpotifySwitchAtom = atomWithStorage(
-    "extSpotifyswitchAtom",
+    "extSpotifySwitchAtom",
     false,
+);
+
+/**
+ * 是否启用自动修正 默认开启
+ */
+export const extSpotifyDelaySwitchAtom = atomWithStorage(
+    "extSpotifyDelaySwitchAtom",
+    true,
 );
 
 /**
