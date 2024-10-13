@@ -58,7 +58,7 @@ export const SettingPage = () => {
 
     // load
     useEffect(() => {
-        console.log("SettingPage Loaded");
+        consoleLog("INFO", "settings", "SettingPage Loaded");
     }, []);
 
     // ======================== extSpotify 前置组件 ========================

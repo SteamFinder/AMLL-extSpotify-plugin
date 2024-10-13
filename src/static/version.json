@@ -1,6 +1,6 @@
 {
-    "extVer":"2.5-beta-v1",
+    "extVer":"2.6-beta-v1",
     "extChannel":"beta",
-    "minApi":"1",
+    "minApi":"v1",
     "updTime":"2024-10-23 1:18"
 }

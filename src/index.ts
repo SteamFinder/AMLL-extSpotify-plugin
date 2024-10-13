@@ -8,6 +8,9 @@ extensionContext.addEventListener("extension-load", () => {
     consoleLog("INFO","index","加载成功");
     console.log(extensionContext.playerStates);
     console.log(extensionContext.amllStates);
+    console.log(extensionContext.playerDB);
+    console.log(extensionContext.playerDB.ttmlDB);
+
 });
 
 extensionContext.addEventListener("extension-unload", () => {

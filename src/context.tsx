@@ -10,7 +10,8 @@ import {
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
-import { parseTTML } from "./amll-core-src/lyric/ttml";
+import { type TTMLDBLyricEntry } from "./dexie";
+import type { TTMLLyric } from "@applemusic-like-lyrics/lyric";
 
 export const ExtensionContext: FC = () => {
 
@@ -47,8 +48,81 @@ export const ExtensionContext: FC = () => {
 
     const accessToken = extSpotifyAccessToken;
 
-    // 轮询 SpotifyAPI
+    // 从TTML DB读取歌词信息
+    const [perfectMatch, setPerfectMatch] = useState(false);
+    async function readTTMLDB(id: string, name: string, artist: string) {
+        setPerfectMatch(false);
+        const word = name.trim();
+        if (word.length > 0) {
+            let pattern: string | RegExp = word.toLowerCase();
+            let musicID: string = id;
+            let musicName: string = name;
+            let musicArtist: string = artist;
+            try {
+                pattern = new RegExp(word, "i");
+            } catch { }
+            const matchResult = await extensionContext.playerDB.ttmlDB
+                .toCollection()
+                .reverse()
+                .filter((x) => !!isTTMLEntryMatch(x, pattern, musicID, musicName, musicArtist))
+                .limit(10)
+                .sortBy("name")
+                .then((x) =>
+                    x.map((x) => isTTMLEntryMatch(x, pattern, musicID, musicName, musicArtist)).filter((v) => !!v),
+                );
+            console.log(matchResult);
+            if (matchResult.length === 0) {
+                consoleLog("WARN", "context", "未在TTML DB找到该歌词");
+                return [];
+            } else {
+                consoleLog("INFO", "context", "成功在TTML DB寻找到歌词");
+                for (let i = 0; i < matchResult.length; i++) {
+                    if(matchResult[i].songID.match(id)){
+                        consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byId");
+                        return extensionContext.lyric.parseTTML(matchResult[i].raw).lines;
+                    }else if(matchResult[i].songArtists.match(artist)){
+                        consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byArtist");
+                        return extensionContext.lyric.parseTTML(matchResult[i].raw).lines;
+                    }else if(i = matchResult.length - 1 ){
+                        consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byFuzzySearch");
+                        return extensionContext.lyric.parseTTML(matchResult[0].raw).lines;
+                    }
+                }               
+            }
+        }
+        consoleLog("WARN", "context", "通过Dexie查询TTML DB失败");
+        return [];
+    }
 
+    function getMetadataValue(ttml: TTMLLyric, key: string) {
+        let result = "";
+        for (const [k, v] of ttml.metadata) {
+            if (k === key) {
+                result += v.join(", ");
+            }
+        }
+        return result;
+    }
+
+    function isTTMLEntryMatch(entry: TTMLDBLyricEntry, pattern: string | RegExp, id: string, name: string, artist: string) {
+        const result = {
+            name: entry.name,
+            raw: entry.raw,
+            songID: getMetadataValue(entry.content, "spotifyId"),
+            songName: getMetadataValue(entry.content, "musicName"),
+            songArtists: getMetadataValue(entry.content, "artists"),
+        };
+
+        if (result.songID.match(id)) {
+            return result;
+        } else if (result.songName.includes(name) || name.includes(result.songName)) {
+            return result;
+        }
+
+        return undefined;
+    }
+
+    // 轮询 SpotifyAPI
     // 防止重复使用钩子
     var oldMusicID = "";
     var oldIsPlaying = false;
@@ -82,56 +156,13 @@ export const ExtensionContext: FC = () => {
                 };
                 setMusicArtists([MusicArtistsInfo]);
 
-                try {
-                    const lyricsResponse = await fetch(
-                        "https://raw.githubusercontent.com/Steve-xmh/amll-ttml-db/refs/heads/main/spotify-lyrics/" +
-                        jsonData.item.id +
-                        ".ttml",
-                        {
-                            method: "GET",
-                        },
-                    );
-                    if (lyricsResponse.status === 200) {
-                        // 获取到歌词后进行转换
-                        const lyricsData = await lyricsResponse.text();
-                        const parsedResult = parseTTML(lyricsData);
-                        // const parsedResult = parseTTML(lyricsData).lines;
-                        setHideLyricView(false);
-                        setMusicLyricLines(parsedResult);
-                    } else {
-                        setHideLyricView(true);
-                        setMusicLyricLines([]);
-                        consoleLog("INFO", "context", "Github-未搜索到/Proxy-未尝试");
-                    }
-                } catch (error) {
-                    // 未获取到歌词时设置为空
-                    consoleLog("INFO", "context", "Github-访问失败/Proxy-未尝试");
-                    try {
-                        const lyricsProxyResponse = await fetch(
-                            "https://cf.ghproxy.cc/" +
-                            "https://raw.githubusercontent.com/Steve-xmh/amll-ttml-db/refs/heads/main/spotify-lyrics/" +
-                            jsonData.item.id +
-                            ".ttml",
-                            {
-                                method: "GET",
-                            },
-                        );
-                        if (lyricsProxyResponse.status === 200) {
-                            const lyricsProxyData = await lyricsProxyResponse.text();
-                            const parsedProxyResult = parseTTML(lyricsProxyData);
-                            // const parsedProxyResult = parseTTML(lyricsProxyData).lines;
-                            setHideLyricView(false);
-                            setMusicLyricLines(parsedProxyResult);
-                        } else {
-                            setHideLyricView(true);
-                            setMusicLyricLines([]);
-                            consoleLog("INFO", "context", "Github-访问失败/Proxy-未搜索到");
-                        }
-                    } catch (error) {
-                        setHideLyricView(true);
-                        setMusicLyricLines([]);
-                        consoleLog("INFO", "context", "Github-访问失败/Proxy-访问失败");
-                    }
+                const parsedResult = readTTMLDB(jsonData.item.id, jsonData.item.name, jsonData.item.artists[0].name)
+                if ((await parsedResult).length === 0) {
+                    setHideLyricView(true);
+                    setMusicLyricLines(parsedResult);
+                } else {
+                    setHideLyricView(false);
+                    setMusicLyricLines(parsedResult);
                 }
             }
 
@@ -152,7 +183,9 @@ export const ExtensionContext: FC = () => {
             setMusicPlaying(false);
             return null;
         } else {
-            console.error("extSpotify::无法从SpotifyAPI读取数据", response.status);
+            consoleLog("WARN", "context", "无法从SpotifyAPI读取数据");
+            setMusicPlaying(false);
+            console.error(response.status);
             return null;
         }
     }
