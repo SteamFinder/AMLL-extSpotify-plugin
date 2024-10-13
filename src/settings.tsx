@@ -304,7 +304,7 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
-            
+
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
@@ -364,9 +364,7 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
-            <SubTitle>自动插值
-            <Badge color="blue">Preview</Badge>
-            </SubTitle>
+                <SubTitle>自动插值</SubTitle>
 
             <SwitchSettings
                 label={"自动计算插值"}
