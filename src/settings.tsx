@@ -362,11 +362,11 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
-                <SubTitle>自动插值</SubTitle>
+                <SubTitle>自动插值(测试中)</SubTitle>
 
             <SwitchSettings
                 label={"自动计算插值"}
-                description={"开启后可以自动管理插值"}
+                description={"开启后可以自动管理插值, 本功能依赖时间轴自动修正"}
                 configAtom={extSpotifyInterpolationSwitchAtom}
             />
 
@@ -535,7 +535,7 @@ export const extSpotifyInterpolationCalcAtom = atomWithStorage(
  */
 export const extSpotifyProxyAtom = atomWithStorage(
     "extSpotifyProxyAtom",
-    "https://cf.ghproxy.cc/",
+    "",
 );
 
 // ======================== extSpotify 使用的Player Atom ========================

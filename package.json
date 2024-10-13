@@ -12,7 +12,7 @@
     "name:en-US": "extSpotify",
     "name:zh-CN": "extSpotify",
     "dependency": [],
-    "icon": "https://cf.ghproxy.cc/https://github.com/SteamFinder/AMLL-extSpotify-plugin/blob/main/src/static/logo.svg"
+    "icon": "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin/src/static/logo.svg"
   },
   "devDependencies": {
     "@applemusic-like-lyrics/lyric": "^0.2.4",
