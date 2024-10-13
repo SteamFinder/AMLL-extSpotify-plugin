@@ -29,8 +29,8 @@ import extVerInfos from "./static/version.json";
 
 // ======================== extSpotify setLog ========================
 
-const WARN_TAG = chalk.bgHex("#FFAA00").hex("#FFFFFF")(" WARN ");
-const INFO_TAG = chalk.bgHex("#FF7700").hex("#FFFFFF")(" INFO ");
+const WARN_TAG = chalk.bgHex("#FF7700").hex("#FFFFFF")(" WARN ");
+const INFO_TAG = chalk.bgHex("#00aaff").hex("#FFFFFF")(" INFO ");
 const NAME_TAG = chalk.bgHex("#1ed760").hex("#FFFFFF")(" extSpotify ");
 
 export function consoleLog(type: string, func: string, info: string) {
@@ -143,6 +143,7 @@ export const SettingPage = () => {
                 "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin@main/src/static/version.json",
                 {
                     method: "GET",
+                    cache: 'reload'
                 },
             );
             if (updateInfosResponse.status === 200) {
