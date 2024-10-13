@@ -83,7 +83,7 @@ export const ExtensionContext: FC = () => {
                     } else if (matchResult[i].songArtists.match(artist)) {
                         consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byArtist");
                         return extensionContext.lyric.parseTTML(matchResult[i].raw).lines;
-                    } else if (i = matchResult.length - 1) {
+                    } else if (i === matchResult.length - 1) {
                         consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byFuzzySearch");
                         return extensionContext.lyric.parseTTML(matchResult[0].raw).lines;
                     }
