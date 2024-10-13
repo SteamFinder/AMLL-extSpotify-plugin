@@ -9,10 +9,8 @@ import {
     extSpotifyRedirectUrlAtom,
     extSpotifyDelaySwitchAtom,
     extSpotifyInterpolationMaxAtom,
-    extSpotifyInterpolationAddAtom,
     extSpotifyInterpolationCalcAtom,
     extSpotifyInterpolationSwitchAtom,
-    extSpotifyInterpolationDataAtom,
     extSpotifyDebugSwitchAtom,
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
@@ -39,10 +37,8 @@ export const ExtensionContext: FC = () => {
     const [extSpotifyDelay, setExtSpotifyDelay] = useAtom(extSpotifyDelayAtom);
     const [extSpotifyDelaySwitch, setExtSpotifyDelaySwitch] = useAtom(extSpotifyDelaySwitchAtom);
     const [extSpotifyInterpolationMax, setExtSpotifyInterpolationMax] = useAtom(extSpotifyInterpolationMaxAtom);
-    const [extSpotifyInterpolationAdd, setExtSpotifyInterpolationAdd] = useAtom(extSpotifyInterpolationAddAtom);
     const [extSpotifyInterpolationCalc, setExtSpotifyInterpolationCalc] = useAtom(extSpotifyInterpolationCalcAtom);
     const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
-    const [extSpotifyInterpolationData, setExtSpotifyInterpolationData] = useAtom(extSpotifyInterpolationDataAtom);
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
 
     // Playing
@@ -142,6 +138,8 @@ export const ExtensionContext: FC = () => {
     var oldIsPlaying = false;
     var oldPlayTime = 0;
     var interpolationData = [];
+    var offset = 0;
+    var delay = 0;
 
     async function getCurrentPlayingTrack(accessToken: string) {
 
@@ -165,7 +163,7 @@ export const ExtensionContext: FC = () => {
             // Http Fetch Delay
             const latency = endTime - startTime;
             if (extSpotifyDelaySwitch) {
-                setExtSpotifyDelay(latency);
+                delay = latency;
             }
 
             const jsonData = await response.json();
@@ -176,6 +174,7 @@ export const ExtensionContext: FC = () => {
 
             // 切歌 获取歌词
             if (oldMusicID != jsonData.item.id) {
+
                 oldMusicID = jsonData.item.id;
 
                 setMusicCover(jsonData.item.album.images[0].url);
@@ -187,7 +186,7 @@ export const ExtensionContext: FC = () => {
                     id: jsonData.item.artists[0].id,
                 };
                 setMusicArtists([MusicArtistsInfo]);
-                setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
+                setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay + delay);
                 interpolationData.splice(0, interpolationData.length);
 
                 const parsedResult = readTTMLDB(jsonData.item.id, jsonData.item.name, jsonData.item.artists[0].name)
@@ -198,13 +197,14 @@ export const ExtensionContext: FC = () => {
                     setHideLyricView(false);
                     setMusicLyricLines(parsedResult);
                 }
+
             } else {
 
                 // 开启自动插值
                 if (extSpotifyInterpolationSwitch) {
                     // 未切歌, 进行插值
                     const oldPlayTimeAbs = Math.abs(oldPlayTime);
-                    const nowPlayTimeAbs = Math.abs(jsonData.progress_ms + extSpotifyDelay);
+                    const nowPlayTimeAbs = Math.abs(jsonData.progress_ms + extSpotifyDelay + delay);
                     const playDistanceAbs = Math.abs(oldPlayTimeAbs - nowPlayTimeAbs);
                     const playInterpolation = Math.abs(playDistanceAbs - extSpotifyInterval)
 
@@ -227,27 +227,43 @@ export const ExtensionContext: FC = () => {
                         if (extSpotifyDebugSwitch) {
                             console.log("计算自动插值测量点成功", averageInterpolationData);
                         }
-                        setExtSpotifyInterpolationData(averageInterpolationData);
+                        offset = averageInterpolationData;
                         interpolationData.splice(0, interpolationData.length);
                         interpolationData.push(playInterpolation);
                     }
 
                     if (0 <= playInterpolation && playInterpolation < extSpotifyInterpolationMax) {
                         if (extSpotifyDebugSwitch) {
-                            console.log("自动插值", oldPlayTimeAbs, nowPlayTimeAbs, playInterpolation);
+                            console.log("自动插值",
+                                "oldPlayTimeAbs", oldPlayTimeAbs,
+                                "nowPlayTimeAbs", nowPlayTimeAbs,
+                                "playInterpolation", playInterpolation,
+                                "extSpotifyInterval", extSpotifyInterval,
+                                "offset", offset,
+                                "extSpotifyDelay", extSpotifyDelay,
+                                "delay", delay
+                            );
                         }
-                        setMusicPlayingPosition(oldPlayTime + extSpotifyInterval + extSpotifyInterpolationAdd + extSpotifyInterpolationData);
+                        setMusicPlayingPosition(oldPlayTime + extSpotifyInterval + extSpotifyDelay + offset);
                         oldPlayTime = oldPlayTime + extSpotifyInterval;
                     } else {
                         if (extSpotifyDebugSwitch) {
-                            console.log("超出插值范围, 进行数据修正", oldPlayTimeAbs, nowPlayTimeAbs, playInterpolation);
+                            console.log("超出自动插值范围, 正在校准",
+                                "oldPlayTimeAbs", oldPlayTimeAbs,
+                                "nowPlayTimeAbs", nowPlayTimeAbs,
+                                "playInterpolation", playInterpolation,
+                                "extSpotifyInterval", extSpotifyInterval,
+                                "offset", offset,
+                                "extSpotifyDelay", extSpotifyDelay,
+                                "delay", delay
+                            );
                         }
-                        setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
-                        oldPlayTime = jsonData.progress_ms + extSpotifyDelay;
+                        setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay + delay);
+                        oldPlayTime = jsonData.progress_ms + extSpotifyDelay + delay;
                     }
                 } else {
                     // 关闭自动插值
-                    setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
+                    setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay + delay);
                 }
 
             }
@@ -295,7 +311,7 @@ export const ExtensionContext: FC = () => {
 
             return () => clearInterval(intervalId); // 清除定时器
         }
-    }, [extSpotifySwitch, accessToken]);
+    }, [extSpotifySwitch, extSpotifyDebugSwitch, extSpotifyInterpolationSwitch, extSpotifyDelaySwitch, extSpotifyInterval, extSpotifyDelay, extSpotifyInterpolationMax, extSpotifyInterpolationCalc, accessToken]);
 
     useEffect(() => {
         consoleLog("INFO", "context", "挂载成功");

@@ -133,10 +133,8 @@ export const SettingPage = () => {
     const [extSpotifyMinApi, setExtsportifyMinApi] = useState("unknown extSpotifyMinApi");
     const [extSpotifyUpdTime, setExtsportifyUpdTime] = useState("unknown extSpotifyUpdTime");
     const [extSpotifyInterpolationMax, setExtSpotifyInterpolationMax] = useAtom(extSpotifyInterpolationMaxAtom);
-    const [extSpotifyInterpolationAdd, setExtSpotifyInterpolationAdd] = useAtom(extSpotifyInterpolationAddAtom);
     const [extSpotifyInterpolationCalc, setExtSpotifyInterpolationCalc] = useAtom(extSpotifyInterpolationCalcAtom);
     const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
-    const [extSpotifyInterpolationData, setExtSpotifyInterpolationData] = useAtom(extSpotifyInterpolationDataAtom);
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
 
     const accessToken = extSpotifyAccessToken;
@@ -233,7 +231,7 @@ export const SettingPage = () => {
                         </DataList.Value>
                     </DataList.Item>
                     <DataList.Item>
-                        <DataList.Label minWidth="88px">最低兼容API</DataList.Label>
+                        <DataList.Label minWidth="88px">TargetAPI</DataList.Label>
                         <DataList.Value>
                             <Flex align="center" gap="2">
                                 <Code variant="ghost">{extSpotifyMinApi}</Code>
@@ -344,7 +342,7 @@ export const SettingPage = () => {
 
             <SwitchSettings
                 label={"时间轴自动修正"}
-                description={"开启后可以自动管理时间轴修正"}
+                description={"开启后可以自动管理时间轴修正, 使用前请先把下面的时间轴修正调整为0"}
                 configAtom={extSpotifyDelaySwitchAtom}
             />
 
@@ -391,22 +389,6 @@ export const SettingPage = () => {
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
-                        <Text as="div">自动插值额外补偿值</Text>
-                        <Text as="div" color="gray" size="2" >
-                            可以根据需求调整
-                        </Text>
-                    </Flex>
-                    <TextField.Root
-                        value={extSpotifyInterpolationAdd}
-                        onChange={(e) => setExtSpotifyInterpolationAdd(Number(e.currentTarget.value))}
-                    />
-                    ms
-                </Flex>
-            </Card>
-
-            <Card mt="2">
-                <Flex direction="row" align="center" gap="4" my="2">
-                    <Flex direction="column" flexGrow="1">
                         <Text as="div">自动插值测量点数量</Text>
                         <Text as="div" color="gray" size="2" >
                             影响自动插值补偿的计算, 不建议过少
@@ -416,22 +398,6 @@ export const SettingPage = () => {
                         value={extSpotifyInterpolationCalc}
                         onChange={(e) => setExtSpotifyInterpolationCalc(Number(e.currentTarget.value))}
                     />
-                </Flex>
-            </Card>
-
-            <Card mt="2">
-                <Flex direction="row" align="center" gap="4" my="2">
-                    <Flex direction="column" flexGrow="1">
-                        <Text as="div">自动插值自动额外补偿值</Text>
-                        <Text as="div" color="gray" size="2" >
-                            不建议手动调整
-                        </Text>
-                    </Flex>
-                    <TextField.Root
-                        value={extSpotifyInterpolationData}
-                        onChange={(e) => setExtSpotifyInterpolationData(Number(e.currentTarget.value))}
-                    />
-                    ms
                 </Flex>
             </Card>
 
@@ -557,27 +523,11 @@ export const extSpotifyInterpolationMaxAtom = atomWithStorage(
 );
 
 /**
- * 自动插值 额外补偿值
- */
-export const extSpotifyInterpolationAddAtom = atomWithStorage(
-    "extSpotifyInterpolationAddAtom",
-    0,
-);
-
-/**
  * 自动插值 采样点数量
  */
 export const extSpotifyInterpolationCalcAtom = atomWithStorage(
     "extSpotifyInterpolationCalcAtom",
-    5,
-);
-
-/**
- * 自动插值 自动计算补偿值
- */
-export const extSpotifyInterpolationDataAtom = atomWithStorage(
-    "extSpotifyInterpolationDataAtom",
-    0,
+    30,
 );
 
 /**
