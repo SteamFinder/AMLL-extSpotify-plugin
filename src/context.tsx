@@ -77,17 +77,17 @@ export const ExtensionContext: FC = () => {
             } else {
                 consoleLog("INFO", "context", "成功在TTML DB寻找到歌词");
                 for (let i = 0; i < matchResult.length; i++) {
-                    if(matchResult[i].songID.match(id)){
+                    if (matchResult[i].songID.match(id)) {
                         consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byId");
                         return extensionContext.lyric.parseTTML(matchResult[i].raw).lines;
-                    }else if(matchResult[i].songArtists.match(artist)){
+                    } else if (matchResult[i].songArtists.match(artist)) {
                         consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byArtist");
                         return extensionContext.lyric.parseTTML(matchResult[i].raw).lines;
-                    }else if(i = matchResult.length - 1 ){
+                    } else if (i = matchResult.length - 1) {
                         consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byFuzzySearch");
                         return extensionContext.lyric.parseTTML(matchResult[0].raw).lines;
                     }
-                }               
+                }
             }
         }
         consoleLog("WARN", "context", "通过Dexie查询TTML DB失败");
@@ -116,10 +116,11 @@ export const ExtensionContext: FC = () => {
         if (result.songID.match(id)) {
             return result;
         } else if (result.songName.includes(name) || name.includes(result.songName)) {
-            if(!result.songArtists || !result.songName){
+            if (!result.songArtists || !result.songName) {
                 return undefined;
+            } else {
+                return result;
             }
-            return result;
         }
 
         return undefined;
