@@ -132,6 +132,12 @@ export const SettingPage = () => {
     const [extSpotifyChannel, setExtsportifyChannel] = useState("unknown extSpotifyChannel");
     const [extSpotifyMinApi, setExtsportifyMinApi] = useState("unknown extSpotifyMinApi");
     const [extSpotifyUpdTime, setExtsportifyUpdTime] = useState("unknown extSpotifyUpdTime");
+    const [extSpotifyInterpolationMax, setExtSpotifyInterpolationMax] = useAtom(extSpotifyInterpolationMaxAtom);
+    const [extSpotifyInterpolationAdd, setExtSpotifyInterpolationAdd] = useAtom(extSpotifyInterpolationAddAtom);
+    const [extSpotifyInterpolationCalc, setExtSpotifyInterpolationCalc] = useAtom(extSpotifyInterpolationCalcAtom);
+    const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
+    const [extSpotifyInterpolationData, setExtSpotifyInterpolationData] = useAtom(extSpotifyInterpolationDataAtom);
+    const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
 
     const accessToken = extSpotifyAccessToken;
 
@@ -314,13 +320,11 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
-            <SubTitle>extSpotify 扩展行为</SubTitle>
+            <Button m="2" onClick={() => getAuth()}>
+                登录Spotify
+            </Button>
 
-            <SwitchSettings
-                label={"启用时间轴自动修正"}
-                description={"开启后可以自动管理时间轴修正"}
-                configAtom={extSpotifyDelaySwitchAtom}
-            />
+            <SubTitle>extSpotify 扩展行为</SubTitle>
 
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
@@ -338,10 +342,16 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
+            <SwitchSettings
+                label={"时间轴自动修正"}
+                description={"开启后可以自动管理时间轴修正"}
+                configAtom={extSpotifyDelaySwitchAtom}
+            />
+
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
-                        <Text as="div">Spotify时间轴修正</Text>
+                        <Text as="div">时间轴修正</Text>
                         <Text as="div" color="gray" size="2" >
                             由于从API获取信息存在延迟, 需要进行修正
                         </Text>
@@ -353,6 +363,87 @@ export const SettingPage = () => {
                     ms
                 </Flex>
             </Card>
+
+            <SubTitle>自动插值
+            <Badge color="blue">Preview</Badge>
+            </SubTitle>
+
+            <SwitchSettings
+                label={"自动计算插值"}
+                description={"开启后可以自动管理插值"}
+                configAtom={extSpotifyInterpolationSwitchAtom}
+            />
+
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4" my="2">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">自动插值范围最大值</Text>
+                        <Text as="div" color="gray" size="2" >
+                            超出插值范围后将自动修正数据, 可能会造成歌词速度不均匀
+                        </Text>
+                    </Flex>
+                    <TextField.Root
+                        value={extSpotifyInterpolationMax}
+                        onChange={(e) => setExtSpotifyInterpolationMax(Number(e.currentTarget.value))}
+                    />
+                    ms
+                </Flex>
+            </Card>
+
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4" my="2">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">自动插值额外补偿值</Text>
+                        <Text as="div" color="gray" size="2" >
+                            可以根据需求调整
+                        </Text>
+                    </Flex>
+                    <TextField.Root
+                        value={extSpotifyInterpolationAdd}
+                        onChange={(e) => setExtSpotifyInterpolationAdd(Number(e.currentTarget.value))}
+                    />
+                    ms
+                </Flex>
+            </Card>
+
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4" my="2">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">自动插值测量点数量</Text>
+                        <Text as="div" color="gray" size="2" >
+                            影响自动插值补偿的计算, 不建议过少
+                        </Text>
+                    </Flex>
+                    <TextField.Root
+                        value={extSpotifyInterpolationCalc}
+                        onChange={(e) => setExtSpotifyInterpolationCalc(Number(e.currentTarget.value))}
+                    />
+                </Flex>
+            </Card>
+
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4" my="2">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">自动插值自动额外补偿值</Text>
+                        <Text as="div" color="gray" size="2" >
+                            不建议手动调整
+                        </Text>
+                    </Flex>
+                    <TextField.Root
+                        value={extSpotifyInterpolationData}
+                        onChange={(e) => setExtSpotifyInterpolationData(Number(e.currentTarget.value))}
+                    />
+                    ms
+                </Flex>
+            </Card>
+
+            <SubTitle>杂项</SubTitle>
+
+            <SwitchSettings
+                label={"Debug"}
+                description={"开启后可以看到Debug信息"}
+                configAtom={extSpotifyDebugSwitchAtom}
+            />
 
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
@@ -368,10 +459,6 @@ export const SettingPage = () => {
                     />
                 </Flex>
             </Card>
-
-            <Button m="2" onClick={() => getAuth()}>
-                登录Spotify
-            </Button>
 
             <Text as="div">extSpotify测试版, 可能存在诸多Bug, 欢迎反馈</Text>
             <Text as="div">Powered by AMLL Player Extension Platform</Text>
@@ -397,6 +484,22 @@ export const extSpotifySwitchAtom = atomWithStorage(
 export const extSpotifyDelaySwitchAtom = atomWithStorage(
     "extSpotifyDelaySwitchAtom",
     true,
+);
+
+/**
+ * 是否启用自动插值 默认开启
+ */
+export const extSpotifyInterpolationSwitchAtom = atomWithStorage(
+    "extSpotifyInterpolationSwitchAtom",
+    true,
+);
+
+/**
+ * 是否启用Debug, 默认关闭
+ */
+export const extSpotifyDebugSwitchAtom = atomWithStorage(
+    "extSpotifyDebugSwitchAtom",
+    false,
 );
 
 /**
@@ -438,6 +541,7 @@ export const extSpotifyIntervalAtom = atomWithStorage(
     "extSpotifyIntervalAtom",
     800,
 );
+
 /**
  * Spotify API时间轴修正 默认100(ms)
  */
@@ -445,6 +549,39 @@ export const extSpotifyDelayAtom = atomWithStorage(
     "extSpotifyDelayAtom",
     100,
 );
+
+/**
+ * 自动插值 范围最大值
+ */
+export const extSpotifyInterpolationMaxAtom = atomWithStorage(
+    "extSpotifyInterpolationMaxAtom",
+    200,
+);
+
+/**
+ * 自动插值 额外补偿值
+ */
+export const extSpotifyInterpolationAddAtom = atomWithStorage(
+    "extSpotifyInterpolationAddAtom",
+    0,
+);
+
+/**
+ * 自动插值 采样点数量
+ */
+export const extSpotifyInterpolationCalcAtom = atomWithStorage(
+    "extSpotifyInterpolationCalcAtom",
+    5,
+);
+
+/**
+ * 自动插值 自动计算补偿值
+ */
+export const extSpotifyInterpolationDataAtom = atomWithStorage(
+    "extSpotifyInterpolationDataAtom",
+    0,
+);
+
 /**
  * Github Proxy
  */

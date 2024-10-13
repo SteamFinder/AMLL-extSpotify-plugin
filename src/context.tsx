@@ -7,7 +7,13 @@ import {
     extSpotifyClientIDAtom,
     extSpotifyDelayAtom,
     extSpotifyRedirectUrlAtom,
-    extSpotifyDelaySwitchAtom
+    extSpotifyDelaySwitchAtom,
+    extSpotifyInterpolationMaxAtom,
+    extSpotifyInterpolationAddAtom,
+    extSpotifyInterpolationCalcAtom,
+    extSpotifyInterpolationSwitchAtom,
+    extSpotifyInterpolationDataAtom,
+    extSpotifyDebugSwitchAtom,
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
@@ -32,6 +38,12 @@ export const ExtensionContext: FC = () => {
     );
     const [extSpotifyDelay, setExtSpotifyDelay] = useAtom(extSpotifyDelayAtom);
     const [extSpotifyDelaySwitch, setExtSpotifyDelaySwitch] = useAtom(extSpotifyDelaySwitchAtom);
+    const [extSpotifyInterpolationMax, setExtSpotifyInterpolationMax] = useAtom(extSpotifyInterpolationMaxAtom);
+    const [extSpotifyInterpolationAdd, setExtSpotifyInterpolationAdd] = useAtom(extSpotifyInterpolationAddAtom);
+    const [extSpotifyInterpolationCalc, setExtSpotifyInterpolationCalc] = useAtom(extSpotifyInterpolationCalcAtom);
+    const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
+    const [extSpotifyInterpolationData, setExtSpotifyInterpolationData] = useAtom(extSpotifyInterpolationDataAtom);
+    const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
 
     // Playing
     const [musicCover, setMusicCover] = useAtom<string>(extensionContext.amllStates.musicCoverAtom);
@@ -46,7 +58,6 @@ export const ExtensionContext: FC = () => {
     const [musicLyricLines, setMusicLyricLines] = useAtom(extensionContext.amllStates.musicLyricLinesAtom);
     const [hideLyricView, setHideLyricView] = useAtom<boolean>(extensionContext.amllStates.hideLyricViewAtom);
     const [musicContextMode, setMusicContextMode] = useAtom(extensionContext.playerStates.musicContextModeAtom);
-    const [fetching, setFetching] = useState(false);
 
     const accessToken = extSpotifyAccessToken;
 
@@ -75,7 +86,6 @@ export const ExtensionContext: FC = () => {
                 consoleLog("WARN", "context", "未在TTML DB找到该歌词");
                 return [];
             } else {
-                consoleLog("INFO", "context", "成功在TTML DB寻找到歌词");
                 for (let i = 0; i < matchResult.length; i++) {
                     if (matchResult[i].songID.match(id)) {
                         consoleLog("INFO", "context", "成功在TTML DB寻找到歌词, method:byId");
@@ -130,6 +140,8 @@ export const ExtensionContext: FC = () => {
     // 防止重复使用钩子
     var oldMusicID = "";
     var oldIsPlaying = false;
+    var oldPlayTime = 0;
+    var interpolationData = [];
 
     async function getCurrentPlayingTrack(accessToken: string) {
 
@@ -152,14 +164,17 @@ export const ExtensionContext: FC = () => {
             const endTime = Date.now();
             // Http Fetch Delay
             const latency = endTime - startTime;
-            if(extSpotifyDelaySwitch){
+            if (extSpotifyDelaySwitch) {
                 setExtSpotifyDelay(latency);
             }
 
             const jsonData = await response.json();
-            consoleLog("INFO", "context", "从SpotifyAPI读取数据成功");
 
-            // 获取歌词
+            if (extSpotifyDebugSwitch) {
+                consoleLog("INFO", "context", "从SpotifyAPI读取数据成功");
+            }
+
+            // 切歌 获取歌词
             if (oldMusicID != jsonData.item.id) {
                 oldMusicID = jsonData.item.id;
 
@@ -172,6 +187,7 @@ export const ExtensionContext: FC = () => {
                     id: jsonData.item.artists[0].id,
                 };
                 setMusicArtists([MusicArtistsInfo]);
+                setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
 
                 const parsedResult = readTTMLDB(jsonData.item.id, jsonData.item.name, jsonData.item.artists[0].name)
                 if ((await parsedResult).length === 0) {
@@ -181,10 +197,59 @@ export const ExtensionContext: FC = () => {
                     setHideLyricView(false);
                     setMusicLyricLines(parsedResult);
                 }
-            }
+            } else {
 
-            // 刷新进度条 由于延迟 进行补偿
-            setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
+                // 开启自动插值
+                if (extSpotifyInterpolationSwitch) {
+                    // 未切歌, 进行插值
+                    const oldPlayTimeAbs = Math.abs(oldPlayTime);
+                    const nowPlayTimeAbs = Math.abs(jsonData.progress_ms + extSpotifyDelay);
+                    const playDistanceAbs = Math.abs(oldPlayTimeAbs - nowPlayTimeAbs);
+                    const playInterpolation = Math.abs(playDistanceAbs - extSpotifyInterval)
+
+                    if (interpolationData.length <= extSpotifyInterpolationCalc) {
+                        interpolationData.push(playInterpolation);
+                    } else {
+
+                        function calculateAverageExcludingExtremes(data: number[]): number {
+                            // 排序数组
+                            const sortedData = [...data].sort((a, b) => a - b);
+                            // 去掉一个最大值和一个最小值
+                            const trimmedData = sortedData.slice(1, -1);
+                            // 计算平均值
+                            const sum = trimmedData.reduce((acc, val) => acc + val, 0);
+                            const average = Math.round(sum / trimmedData.length);
+                            return average;
+                        }
+
+                        const averageInterpolationData = calculateAverageExcludingExtremes(interpolationData);
+                        if (extSpotifyDebugSwitch) {
+                            console.log("计算自动插值测量点成功", averageInterpolationData);
+                        }
+                        setExtSpotifyInterpolationData(averageInterpolationData);
+                        interpolationData.splice(0, interpolationData.length);
+                        interpolationData.push(playInterpolation);
+                    }
+
+                    if (0 <= playInterpolation && playInterpolation < extSpotifyInterpolationMax) {
+                        if (extSpotifyDebugSwitch) {
+                            console.log("自动插值", oldPlayTimeAbs, nowPlayTimeAbs, playInterpolation);
+                        }
+                        setMusicPlayingPosition(oldPlayTime + extSpotifyInterval + extSpotifyInterpolationAdd + extSpotifyInterpolationData);
+                        oldPlayTime = oldPlayTime + extSpotifyInterval;
+                    } else {
+                        if (extSpotifyDebugSwitch) {
+                            console.log("超出插值范围, 进行数据修正", oldPlayTimeAbs, nowPlayTimeAbs, playInterpolation);
+                        }
+                        setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
+                        oldPlayTime = jsonData.progress_ms + extSpotifyDelay;
+                    }
+                } else {
+                    // 关闭自动插值
+                    setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
+                }
+
+            }
 
             // 判断是否在播放 同时注意不要循环调用钩子
 
@@ -197,11 +262,15 @@ export const ExtensionContext: FC = () => {
             }
 
         } else if (response.status === 204) {
-            consoleLog("INFO", "context", "当前未播放歌曲");
+            if (extSpotifyDebugSwitch) {
+                consoleLog("INFO", "context", "当前未播放歌曲");
+            }
             setMusicPlaying(false);
             return null;
         } else {
-            consoleLog("WARN", "context", "无法从SpotifyAPI读取数据");
+            if (extSpotifyDebugSwitch) {
+                consoleLog("WARN", "context", "无法从SpotifyAPI读取数据");
+            }
             setMusicPlaying(false);
             console.error(response.status);
             return null;
