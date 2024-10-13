@@ -116,6 +116,9 @@ export const ExtensionContext: FC = () => {
         if (result.songID.match(id)) {
             return result;
         } else if (result.songName.includes(name) || name.includes(result.songName)) {
+            if(!result.songArtists || !result.songName){
+                return undefined;
+            }
             return result;
         }
 
