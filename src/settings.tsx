@@ -140,7 +140,7 @@ export const SettingPage = () => {
         consoleLog("INFO", "settings", "检查更新中");
         try {
             const updateInfosResponse = await fetch(
-                "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin@main/src/static/version.json",
+                "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin/src/static/version.json",
                 {
                     method: "GET",
                     cache: 'reload'
