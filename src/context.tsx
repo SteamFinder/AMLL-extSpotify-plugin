@@ -167,7 +167,7 @@ export const ExtensionContext: FC = () => {
             }
 
             // 刷新进度条 由于延迟 进行 50ms 的补偿
-            setMusicPlayingPosition(jsonData.progress_ms + 50);
+            setMusicPlayingPosition(jsonData.progress_ms + extSpotifyDelay);
             // 判断是否在播放 同时注意不要循环调用钩子
 
             if (jsonData.is_playing && !oldIsPlaying) {
