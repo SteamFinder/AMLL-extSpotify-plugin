@@ -132,10 +132,12 @@ export const SettingPage = () => {
     const [extSpotifyChannel, setExtsportifyChannel] = useState("unknown extSpotifyChannel");
     const [extSpotifyMinApi, setExtsportifyMinApi] = useState("unknown extSpotifyMinApi");
     const [extSpotifyUpdTime, setExtsportifyUpdTime] = useState("unknown extSpotifyUpdTime");
+    const [extSpotifyUpdSrc, setExtsportifyUpdSrc] = useState("unknown extSpotifyUpdSrc");
     const [extSpotifyInterpolationMax, setExtSpotifyInterpolationMax] = useAtom(extSpotifyInterpolationMaxAtom);
     const [extSpotifyInterpolationCalc, setExtSpotifyInterpolationCalc] = useAtom(extSpotifyInterpolationCalcAtom);
     const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
+    const [tokenExpire, setTokenExpire] = useAtom(tokenExpireAtom);
 
     const accessToken = extSpotifyAccessToken;
 
@@ -157,6 +159,7 @@ export const SettingPage = () => {
                 setExtsportifyMinApi(extVerInfos.minApi);
                 setExtsportifyUpdTime(extVerInfos.updTime);
                 setExtsportifyOnlineVer(updateInfos.extVer);
+                setExtsportifyUpdSrc(extVerInfos.updSrc);
                 consoleLog("INFO", "settings", "检查更新成功");
             } else {
                 consoleLog("INFO", "settings", "检查更新失败");
@@ -195,6 +198,9 @@ export const SettingPage = () => {
         url += "&redirect_uri=" + encodeURIComponent(redirect_uri);
 
         window.open(url);
+
+        const timestamp = new Date().getTime();
+        setTokenExpire(timestamp);
     }
 
     // ======================== extSpotify界面 ========================
@@ -362,7 +368,7 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
-                <SubTitle>自动插值(测试中)</SubTitle>
+            <SubTitle>自动插值</SubTitle>
 
             <SwitchSettings
                 label={"自动计算插值"}
@@ -423,6 +429,10 @@ export const SettingPage = () => {
                     />
                 </Flex>
             </Card>
+
+            <Button m="2" onClick={() => window.open(extSpotifyUpdSrc)}>
+                前往插件Release页面
+            </Button>
 
             <Text as="div">extSpotify测试版, 可能存在诸多Bug, 欢迎反馈</Text>
             <Text as="div">Powered by AMLL Player Extension Platform</Text>
@@ -536,6 +546,14 @@ export const extSpotifyInterpolationCalcAtom = atomWithStorage(
 export const extSpotifyProxyAtom = atomWithStorage(
     "extSpotifyProxyAtom",
     "",
+);
+
+/**
+ * Access Token Expire Time
+ */
+export const tokenExpireAtom = atomWithStorage(
+    "tokenExpireAtom",
+    1,
 );
 
 // ======================== extSpotify 使用的Player Atom ========================

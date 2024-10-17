@@ -1,6 +1,6 @@
 {
   "name": "io.steamfinder.extspotify",
-  "version": "3.0-beta-v1",
+  "version": "1.0-rs-v1",
   "license": "MIT",
   "scripts": {
     "build:dev": "rollup -c",
@@ -12,7 +12,7 @@
     "name:en-US": "extSpotify",
     "name:zh-CN": "extSpotify",
     "dependency": [],
-    "icon": "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin/src/static/logo.svg"
+    "icon": "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin/src/static/extensionIcon.svg"
   },
   "devDependencies": {
     "@applemusic-like-lyrics/lyric": "^0.2.4",

@@ -12,6 +12,7 @@ import {
     extSpotifyInterpolationCalcAtom,
     extSpotifyInterpolationSwitchAtom,
     extSpotifyDebugSwitchAtom,
+    tokenExpireAtom,
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
@@ -40,6 +41,7 @@ export const ExtensionContext: FC = () => {
     const [extSpotifyInterpolationCalc, setExtSpotifyInterpolationCalc] = useAtom(extSpotifyInterpolationCalcAtom);
     const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
+    const [tokenExpire, setTokenExpire] = useAtom(tokenExpireAtom);
 
     // Playing
     const [musicCover, setMusicCover] = useAtom<string>(extensionContext.amllStates.musicCoverAtom);
@@ -142,6 +144,31 @@ export const ExtensionContext: FC = () => {
     var delay = 0;
 
     async function getCurrentPlayingTrack(accessToken: string) {
+
+        // 验证Access Token是否失效
+        const timestamp = new Date().getTime();
+        const timeDistance = timestamp - tokenExpire;
+        if( timeDistance > 3500 ){
+            function getAuth(){
+                alert("Access Token已失效, 请重新设置");
+                var client_id = extSpotifyClientID;
+                var redirect_uri = extSpotifyRedirectUrl;
+        
+                var scope = "user-read-currently-playing user-modify-playback-state";
+        
+                var url = "https://accounts.spotify.com/authorize";
+                url += "?response_type=token";
+                url += "&client_id=" + encodeURIComponent(client_id);
+                url += "&scope=" + encodeURIComponent(scope);
+                url += "&redirect_uri=" + encodeURIComponent(redirect_uri);
+        
+                window.open(url);
+        
+                const timestamp = new Date().getTime();
+                setTokenExpire(timestamp);
+            }
+            getAuth();
+        }
 
         // 自动修正时间点 起点
         const startTime = Date.now();
