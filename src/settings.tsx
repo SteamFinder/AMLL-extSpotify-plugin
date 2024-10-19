@@ -448,8 +448,9 @@ export const SettingPage = () => {
                 前往插件Release页面
             </Button>
 
-            <Text as="div">extSpotify测试版, 可能存在诸多Bug, 欢迎反馈</Text>
-            <Text as="div">Powered by AMLL Player Extension Platform</Text>
+            <Text as="div">extSpotify</Text>
+            <Text as="div">Created By SteamFinder</Text>
+            <Text as="div">Powered By AMLL Player Extension Platform</Text>
 
             {/* Spotify END */}
         </>
