@@ -18,6 +18,7 @@ import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
 import { type TTMLDBLyricEntry } from "./dexie";
 import type { TTMLLyric } from "@applemusic-like-lyrics/lyric";
+import { Converter } from 'opencc-js';
 
 export const ExtensionContext: FC = () => {
 
@@ -61,7 +62,8 @@ export const ExtensionContext: FC = () => {
 
     // 从TTML DB读取歌词信息
     async function readTTMLDB(id: string, name: string, artist: string) {
-        const word = name.trim();
+        const converter = Converter({ from: 'tw', to: 'cn' });
+        const word = converter(name.trim());
         if (word.length > 0) {
             let pattern: string | RegExp = word.toLowerCase();
             let musicID: string = id;
@@ -142,32 +144,38 @@ export const ExtensionContext: FC = () => {
     var interpolationData = [];
     var offset = 0;
     var delay = 0;
+    var isShowUpd = false;
 
     async function getCurrentPlayingTrack(accessToken: string) {
 
         // 验证Access Token是否失效
         const timestamp = new Date().getTime();
         const timeDistance = timestamp - tokenExpire;
-        if( timeDistance > 3500 ){
-            function getAuth(){
+        if (timeDistance > 3500000) {
+            function getAuth() {
                 alert("Access Token已失效, 请重新设置");
                 var client_id = extSpotifyClientID;
                 var redirect_uri = extSpotifyRedirectUrl;
-        
+
                 var scope = "user-read-currently-playing user-modify-playback-state";
-        
+
                 var url = "https://accounts.spotify.com/authorize";
                 url += "?response_type=token";
                 url += "&client_id=" + encodeURIComponent(client_id);
                 url += "&scope=" + encodeURIComponent(scope);
                 url += "&redirect_uri=" + encodeURIComponent(redirect_uri);
-        
+
                 window.open(url);
-        
-                const timestamp = new Date().getTime();
-                setTokenExpire(timestamp);
+
+                const timestampNew = new Date().getTime();
+                setTokenExpire(timestampNew);
+                isShowUpd = true;
             }
-            getAuth();
+
+            // 防止重复弹出
+            if (!isShowUpd) {
+                getAuth();
+            }
         }
 
         // 自动修正时间点 起点

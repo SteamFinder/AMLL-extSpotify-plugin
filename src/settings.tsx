@@ -138,6 +138,7 @@ export const SettingPage = () => {
     const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
     const [tokenExpire, setTokenExpire] = useAtom(tokenExpireAtom);
+    const [updateAvailable, setUpdateAvailable] = useState(false);
 
     const accessToken = extSpotifyAccessToken;
 
@@ -149,11 +150,14 @@ export const SettingPage = () => {
                 "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin/src/static/version.json",
                 {
                     method: "GET",
-                    cache: 'reload'
+                    cache: 'no-cache'
                 },
             );
             if (updateInfosResponse.status === 200) {
                 const updateInfos = await updateInfosResponse.json();
+                if (updateInfos.verNum > extVerInfos.verNum) {
+                    setUpdateAvailable(true);
+                }
                 setExtsportifyVer(extVerInfos.extVer);
                 setExtsportifyChannel(extVerInfos.extChannel);
                 setExtsportifyMinApi(extVerInfos.minApi);
@@ -252,6 +256,16 @@ export const SettingPage = () => {
                             </Flex>
                         </DataList.Value>
                     </DataList.Item>
+                    {updateAvailable && (
+                        <DataList.Item>
+                            <DataList.Label minWidth="88px">更新地址</DataList.Label>
+                            <DataList.Value>
+                                <Flex align="center" gap="2">
+                                    <Code variant="ghost"><a href="{extSpotifyUpdSrc}" target="_blank">{extSpotifyUpdSrc}</a></Code>
+                                </Flex>
+                            </DataList.Value>
+                        </DataList.Item>
+                    )}
                 </DataList.Root>
             </Card>
 
