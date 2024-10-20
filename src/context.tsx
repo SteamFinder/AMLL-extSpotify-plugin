@@ -15,7 +15,7 @@ import {
     tokenExpireAtom,
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
-import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
+import { type WritableAtom, atom, useAtom, useAtomValue, useStore } from "jotai";
 import { type TTMLDBLyricEntry } from "./dexie";
 import type { TTMLLyric } from "@applemusic-like-lyrics/lyric";
 import { Converter } from 'opencc-js';
@@ -57,13 +57,121 @@ export const ExtensionContext: FC = () => {
     const [musicLyricLines, setMusicLyricLines] = useAtom(extensionContext.amllStates.musicLyricLinesAtom);
     const [hideLyricView, setHideLyricView] = useAtom<boolean>(extensionContext.amllStates.hideLyricViewAtom);
     const [musicContextMode, setMusicContextMode] = useAtom(extensionContext.playerStates.musicContextModeAtom);
+    const [currentPlaylist, setCurrentPlaylist] = useAtom<any>(extensionContext.playerStates.currentPlaylistAtom);
+
+    const store = useStore();
 
     const accessToken = extSpotifyAccessToken;
+    var token: string;
+
+    const toEmitThread = (type: string, data: number) => ({
+        onEmit() {
+            if (type === "nextSong") {
+                try {
+                    fetch(
+                        "https://api.spotify.com/v1/me/player/next",
+                        {
+                            method: "POST",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        },
+                    );
+                } catch (error) {
+                    consoleLog("WARN", "context", "向Spotify API 请求下一首失败");
+                    console.log(error);
+                }
+            } else if (type === "prevSong") {
+                try {
+                    fetch(
+                        "https://api.spotify.com/v1/me/player/previous",
+                        {
+                            method: "POST",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        },
+                    );
+                } catch (error) {
+                    consoleLog("WARN", "context", "向Spotify API 请求上一首失败");
+                    console.log(error);
+                }
+            } else if (type === "changePlay") {
+                if (musicPlaying) {
+                    try {
+                        fetch(
+                            "https://api.spotify.com/v1/me/player/pause",
+                            {
+                                method: "PUT",
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            },
+                        );
+                    } catch (error) {
+                        consoleLog("WARN", "context", "向Spotify API 请求暂停失败");
+                        console.log(error);
+                    }
+                } else {
+                    try {
+                        fetch(
+                            "https://api.spotify.com/v1/me/player/play",
+                            {
+                                method: "PUT",
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            },
+                        );
+                    } catch (error) {
+                        consoleLog("WARN", "context", "向Spotify API 请求继续播放失败");
+                        console.log(error);
+                    }
+                }
+            }
+        },
+    });
+
+    const toEmit = <T,>(onEmit: T) => ({
+        onEmit,
+    });
+
+    function overridePlayControl() {
+        store.set(extensionContext.amllStates.onRequestNextSongAtom, toEmitThread("nextSong", -1));
+        store.set(extensionContext.amllStates.onRequestPrevSongAtom, toEmitThread("prevSong", -1));
+        store.set(extensionContext.amllStates.onPlayOrResumeAtom, toEmitThread("changePlay", -1));
+        store.set(
+            extensionContext.amllStates.onLyricLineClickAtom,
+            toEmit((evt) => {
+                try {
+                    fetch(
+                        "https://api.spotify.com/v1/me/player/seek?position_ms=" + evt.line.getLine().startTime,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        },
+                    );
+                } catch (error) {
+                    consoleLog("WARN", "context", "向Spotify API 请求跳转到时间轴" + evt.line.getLine().startTime + "ms失败");
+                    console.log(error);
+                }
+            }),
+        );
+    }
+
+    // 接管播放控制
+    useEffect(() => {
+        token = extSpotifyAccessToken;
+        overridePlayControl();
+    }, [extSpotifyAccessToken, musicPlaying])
 
     // 从TTML DB读取歌词信息
     async function readTTMLDB(id: string, name: string, artist: string) {
         const converter = Converter({ from: 'tw', to: 'cn' });
         const word = converter(name.trim());
+        consoleLog("INFO", "context", "搜索歌词 convertedName:" + word)
         if (word.length > 0) {
             let pattern: string | RegExp = word.toLowerCase();
             let musicID: string = id;
@@ -331,8 +439,7 @@ export const ExtensionContext: FC = () => {
 
     // 修复轮询在 Android 设备上的问题
     useEffect(() => {
-        consoleLog("INFO", "context", "检测到功能开关变化");
-        console.log(extSpotifySwitch);
+        consoleLog("INFO", "context", "检测到功能开关变化 extSpotifySwitch:" + extSpotifySwitch);
 
         if (extSpotifySwitch) {
 

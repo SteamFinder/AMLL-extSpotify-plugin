@@ -1,5 +1,5 @@
 import { atomWithStorage } from "jotai/utils";
-import { type WritableAtom, atom, useAtom, useAtomValue } from "jotai";
+import { type WritableAtom, atom, useAtom, useAtomValue, useStore } from "jotai";
 import {
     type ComponentProps,
     type FC,
@@ -139,8 +139,28 @@ export const SettingPage = () => {
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
     const [tokenExpire, setTokenExpire] = useAtom(tokenExpireAtom);
     const [updateAvailable, setUpdateAvailable] = useState(false);
+    const store = useStore();
 
     const accessToken = extSpotifyAccessToken;
+
+    const [onClickRightFunctionButton, setOnClickRightFunctionButton] = useAtom<any>(extensionContext.amllStates.onClickRightFunctionButtonAtom);
+    const [onLyricLineClick, setOnLyricLineClick] = useAtom<any>(extensionContext.amllStates.onLyricLineClickAtom);
+    const [onRequestNextSong, setOnRequestNextSong] = useAtom<any>(extensionContext.amllStates.onRequestNextSongAtom);
+
+    // Debug
+    function clickDebug(){
+        const toEmitThread = (type) => ({
+			onEmit() {
+				console.log(type);
+			},
+		});
+        console.log(onClickRightFunctionButton);
+        console.log(onLyricLineClick);
+        console.log(onRequestNextSong);
+        store.set(extensionContext.amllStates.onRequestNextSongAtom, toEmitThread("OK"));
+		store.set(extensionContext.amllStates.onRequestPrevSongAtom, toEmitThread("OK"));
+		store.set(extensionContext.amllStates.onPlayOrResumeAtom, toEmitThread("OK"));
+    }
 
     // 检查更新信息
     async function checkUpdate() {
@@ -193,7 +213,7 @@ export const SettingPage = () => {
         var client_id = extSpotifyClientID;
         var redirect_uri = extSpotifyRedirectUrl;
 
-        var scope = "user-read-currently-playing";
+        var scope = "user-read-currently-playing user-modify-playback-state";
 
         var url = "https://accounts.spotify.com/authorize";
         url += "?response_type=token";
@@ -423,12 +443,6 @@ export const SettingPage = () => {
 
             <SubTitle>杂项</SubTitle>
 
-            <SwitchSettings
-                label={"Debug"}
-                description={"开启后可以看到Debug信息"}
-                configAtom={extSpotifyDebugSwitchAtom}
-            />
-
             <Card mt="2">
                 <Flex direction="row" align="center" gap="4" my="2">
                     <Flex direction="column" flexGrow="1">
@@ -446,6 +460,18 @@ export const SettingPage = () => {
 
             <Button m="2" onClick={() => window.open(extSpotifyUpdSrc)}>
                 前往插件Release页面
+            </Button>
+
+            <SubTitle>Debug</SubTitle>
+
+            <SwitchSettings
+                label={"Debug"}
+                description={"开启后可以看到Debug信息"}
+                configAtom={extSpotifyDebugSwitchAtom}
+            />
+
+            <Button m="2" onClick={() => clickDebug()}>
+                currentDebug
             </Button>
 
             <Text as="div">extSpotify</Text>
