@@ -441,8 +441,8 @@ export const ExtensionContext: FC = () => {
 
     // 挂载时设置css属性
     useEffect(() => {
-        const storedFontSize = localStorage.getItem('amllFontSizeAtom');
-        if (storedFontSize === "\"default\"") {
+        const storedFontSize = localStorage.getItem('amllFontSizeAtom').replace(/"/g, '');
+        if (storedFontSize === "default") {
             consoleLog("INFO", "context", "(挂载时)未设置amllFontSize " + storedFontSize);
         } else {
             consoleLog("INFO", "context", "(挂载时)已设置amllFontSize " + storedFontSize);
