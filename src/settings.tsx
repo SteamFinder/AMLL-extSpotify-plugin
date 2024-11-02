@@ -242,6 +242,11 @@ export const SettingPage = () => {
     // 检查更新信息
     async function checkUpdate() {
         consoleLog("INFO", "settings", "检查更新中");
+        setExtsportifyUpdSrc(extVerInfos.updSrc);
+        setExtsportifyVer(extVerInfos.extVer);
+        setExtsportifyChannel(extVerInfos.extChannel);
+        setExtsportifyMinApi(extVerInfos.minApi);
+        setExtsportifyUpdTime(extVerInfos.updTime);
         try {
             const updateInfosResponse = await fetch(
                 "https://cdn.jsdelivr.net/gh/SteamFinder/AMLL-extSpotify-plugin/src/static/version.json",
@@ -255,12 +260,7 @@ export const SettingPage = () => {
                 if (updateInfos.verNum > extVerInfos.verNum) {
                     setUpdateAvailable(true);
                 }
-                setExtsportifyVer(extVerInfos.extVer);
-                setExtsportifyChannel(extVerInfos.extChannel);
-                setExtsportifyMinApi(extVerInfos.minApi);
-                setExtsportifyUpdTime(extVerInfos.updTime);
                 setExtsportifyOnlineVer(updateInfos.extVer);
-                setExtsportifyUpdSrc(extVerInfos.updSrc);
                 consoleLog("INFO", "settings", "检查更新成功");
             } else {
                 consoleLog("INFO", "settings", "检查更新失败");
