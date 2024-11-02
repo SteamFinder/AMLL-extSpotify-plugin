@@ -154,7 +154,7 @@ export const SettingPage = () => {
         // const lyricPlayerElement = getComputedStyle(document.querySelector(".amll-lyric-player"));
         // console.log(lyricPlayerElement.getPropertyValue('--amll-lp-font-size'));
         const lyricPlayerElement = document.querySelector(".amll-lyric-player") as HTMLElement;
-        if (setting === "null") {
+        if (setting === "default") {
             consoleLog("INFO", "settings", "未设置amllFontSize " + setting);
             setAmllFontSize(setting);
             lyricPlayerElement.style.setProperty('--amll-lp-font-size', '');
@@ -481,7 +481,7 @@ export const SettingPage = () => {
                     <Flex direction="column" flexGrow="1">
                         <Text as="div">AMLL Font Size</Text>
                         <Text as="div" color="gray" size="2" >
-                            输入null即恢复默认设置, 本设置等价于--amll-lp-font-size: 你的设置;
+                            输入default即恢复默认设置, 本设置等价于--amll-lp-font-size: 你的设置;
                         </Text>
                     </Flex>
                     <TextField.Root
@@ -635,7 +635,7 @@ export const tokenExpireAtom = atomWithStorage(
  */
 export const amllFontSizeAtom = atomWithStorage(
     "amllFontSizeAtom",
-    "null",
+    "default",
 );
 
 // ======================== extSpotify 使用的Player Atom ========================
