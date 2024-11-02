@@ -14,6 +14,7 @@ import {
     extSpotifyDebugSwitchAtom,
     tokenExpireAtom,
     amllFontSizeAtom,
+    amllLightModeAtom,
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue, useStore } from "jotai";
@@ -45,6 +46,7 @@ export const ExtensionContext: FC = () => {
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
     const [tokenExpire, setTokenExpire] = useAtom(tokenExpireAtom);
     const [amllFontSize, setAmllFontSize] = useAtom(amllFontSizeAtom);
+    const [amllLightMode, setAmllLightMode] = useAtom(amllLightModeAtom);
 
     // Playing
     const [musicCover, setMusicCover] = useAtom<string>(extensionContext.amllStates.musicCoverAtom);
@@ -441,6 +443,7 @@ export const ExtensionContext: FC = () => {
 
     // 挂载时设置css属性
     useEffect(() => {
+        // AMLL Font Size
         const storedFontSizeAtom = localStorage.getItem('amllFontSizeAtom');
         if (storedFontSizeAtom) {
             const storedFontSize = storedFontSizeAtom.replace(/"/g, '');
@@ -454,6 +457,40 @@ export const ExtensionContext: FC = () => {
         } else {
             consoleLog("INFO", "context", "(挂载时)未设置amllFontSize NULL");
         }
+
+        // AMLL Light Mode
+        /*
+        const storedLightModeAtom = localStorage.getItem('amllLightModeAtom');
+        if (storedLightModeAtom === "true") {
+            // 开启light mode
+            const modeElement = document.querySelector(".radix-themes");
+            const classList = modeElement.classList;
+            if (classList.contains("light")) {
+                consoleLog("INFO", "settings", "已为Light Mode, 不再覆盖设置");
+            } else {
+                consoleLog("INFO", "settings", "已设置Light Mode");
+                if (classList.contains("dark")) {
+                    // 去除dark
+                    classList.remove("dark");
+                }
+                classList.add("light");
+            }
+        } else {
+            // 关闭light mode
+            const modeElement = document.querySelector(".radix-themes");
+            const classList = modeElement.classList;
+            if (classList.contains("dark")) {
+                consoleLog("INFO", "settings", "已为Dark Mode, 不再覆盖设置");
+            } else {
+                consoleLog("INFO", "settings", "已设置Dark Mode");
+                if (classList.contains("light")) {
+                    // 去除light
+                    classList.remove("light");
+                }
+                classList.add("dark");
+            }
+        }
+        */
     }, [])
 
     // 修复轮询在 Android 设备上的问题
@@ -472,7 +509,7 @@ export const ExtensionContext: FC = () => {
 
             return () => clearInterval(intervalId); // 清除定时器
         }
-    }, [amllFontSize, extSpotifySwitch, extSpotifyDebugSwitch, extSpotifyInterpolationSwitch, extSpotifyDelaySwitch, extSpotifyInterval, extSpotifyDelay, extSpotifyInterpolationMax, extSpotifyInterpolationCalc, accessToken]);
+    }, [amllLightMode, amllFontSize, extSpotifySwitch, extSpotifyDebugSwitch, extSpotifyInterpolationSwitch, extSpotifyDelaySwitch, extSpotifyInterval, extSpotifyDelay, extSpotifyInterpolationMax, extSpotifyInterpolationCalc, accessToken]);
 
     useEffect(() => {
         consoleLog("INFO", "context", "挂载成功");

@@ -141,6 +141,9 @@ export const SettingPage = () => {
     const [updateAvailable, setUpdateAvailable] = useState(false);
     const store = useStore();
     const [amllFontSize, setAmllFontSize] = useAtom(amllFontSizeAtom);
+    const [amllLightMode, setAmllLightMode] = useAtom(amllLightModeAtom);
+    const [darkMode, setDarkMode] = useAtom(extensionContext.playerStates.darkModeAtom);
+    const [autoDarkMode, setAutoDarkMode] = useAtom(extensionContext.playerStates.autoDarkModeAtom);
 
     const accessToken = extSpotifyAccessToken;
 
@@ -164,6 +167,62 @@ export const SettingPage = () => {
             lyricPlayerElement.style.setProperty('--amll-lp-font-size', setting);
         }
     }
+
+    // 设置AMLL Light Mode
+    function setAmllLightModeFunc(mode: string) {
+        if (mode === "1") {
+            setAmllLightMode("1");
+            setDarkMode("light");
+            setAutoDarkMode(false);
+            consoleLog("INFO", "settings", "已设置Light Mode");
+        } else if (mode === "2") {
+            setAmllLightMode("2");
+            setDarkMode("dark");
+            setAutoDarkMode(false);
+            consoleLog("INFO", "settings", "已设置Dark Mode");
+        } else {
+            // 默认自动
+            setAmllLightMode("0");
+            setDarkMode("auto");
+            setAutoDarkMode(true);
+            consoleLog("INFO", "settings", "已设置Auto Mode");
+        }
+    }
+
+    /*
+    useEffect(() => {
+        if (amllLightMode) {
+            // 开启light mode
+            const modeElement = document.querySelector(".radix-themes");
+            const classList = modeElement.classList;
+            if (classList.contains("light")) {
+                consoleLog("INFO", "settings", "已为Light Mode, 不再覆盖设置");
+            } else {
+                consoleLog("INFO", "settings", "已设置Light Mode");
+                if (classList.contains("dark")) {
+                    // 去除dark
+                    classList.remove("dark");
+                }
+                classList.add("light");
+            }
+        } else {
+            // 关闭light mode
+            consoleLog("INFO", "settings", "已设置Dark Mode");
+            const modeElement = document.querySelector(".radix-themes");
+            const classList = modeElement.classList;
+            if (classList.contains("dark")) {
+                consoleLog("INFO", "settings", "已为Dark Mode, 不再覆盖设置");
+            } else {
+                consoleLog("INFO", "settings", "已设置Dark Mode");
+                if (classList.contains("light")) {
+                    // 去除light
+                    classList.remove("light");
+                }
+                classList.add("dark");
+            }
+        }
+    }, [amllLightMode])
+    */
 
     // Debug
     function clickDebug() {
@@ -491,6 +550,21 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4" my="2">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">AMLL 显示模式</Text>
+                        <Text as="div" color="gray" size="2" >
+                            0: Auto, 1:Light, 2:Dark
+                        </Text>
+                    </Flex>
+                    <TextField.Root
+                        value={amllLightMode}
+                        onChange={(e) => setAmllLightModeFunc(e.currentTarget.value)}
+                    />
+                </Flex>
+            </Card>
+
             <Button m="2" onClick={() => window.open(extSpotifyUpdSrc)}>
                 前往插件Release页面
             </Button>
@@ -636,6 +710,14 @@ export const tokenExpireAtom = atomWithStorage(
 export const amllFontSizeAtom = atomWithStorage(
     "amllFontSizeAtom",
     "default",
+);
+
+/**
+ * AMLL Font Size
+ */
+export const amllLightModeAtom = atomWithStorage(
+    "amllLightModeAtom",
+    "0",
 );
 
 // ======================== extSpotify 使用的Player Atom ========================
