@@ -441,13 +441,18 @@ export const ExtensionContext: FC = () => {
 
     // 挂载时设置css属性
     useEffect(() => {
-        const storedFontSize = localStorage.getItem('amllFontSizeAtom').replace(/"/g, '');
-        if (storedFontSize === "default") {
-            consoleLog("INFO", "context", "(挂载时)未设置amllFontSize " + storedFontSize);
+        const storedFontSizeAtom = localStorage.getItem('amllFontSizeAtom');
+        if (storedFontSizeAtom) {
+            const storedFontSize = storedFontSizeAtom.replace(/"/g, '');
+            if (storedFontSize === "default") {
+                consoleLog("INFO", "context", "(挂载时)未设置amllFontSize " + storedFontSize);
+            } else {
+                consoleLog("INFO", "context", "(挂载时)已设置amllFontSize " + storedFontSize);
+                const lyricPlayerElement = document.querySelector(".amll-lyric-player") as HTMLElement;
+                lyricPlayerElement.style.setProperty('--amll-lp-font-size', storedFontSize);
+            }
         } else {
-            consoleLog("INFO", "context", "(挂载时)已设置amllFontSize " + storedFontSize);
-            const lyricPlayerElement = document.querySelector(".amll-lyric-player") as HTMLElement;
-            lyricPlayerElement.style.setProperty('--amll-lp-font-size', storedFontSize);
+            consoleLog("INFO", "context", "(挂载时)未设置amllFontSize NULL");
         }
     }, [])
 
