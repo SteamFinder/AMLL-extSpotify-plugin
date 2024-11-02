@@ -168,8 +168,10 @@ export const ExtensionContext: FC = () => {
     // 接管播放控制
     useEffect(() => {
         token = extSpotifyAccessToken;
-        overridePlayControl();
-    }, [extSpotifyAccessToken, musicPlaying])
+        if (extSpotifySwitch) {
+            overridePlayControl();
+        }
+    }, [extSpotifyAccessToken, musicPlaying, extSpotifySwitch])
 
     // 从TTML DB读取歌词信息
     async function readTTMLDB(id: string, name: string, artist: string) {
