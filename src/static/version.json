@@ -1,8 +1,8 @@
 {
-    "extVer":"1.1-rs-v1",
-    "verNum":3,
+    "extVer":"1.2-rs-v1",
+    "verNum":4,
     "extChannel":"release",
     "minApi":"v1",
-    "updTime":"2024-10-20 13:00",
+    "updTime":"2024-11-2 18:00",
     "updSrc":"https://github.com/SteamFinder/AMLL-extSpotify-plugin/releases"
 }

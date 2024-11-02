@@ -13,6 +13,7 @@ import {
     extSpotifyInterpolationSwitchAtom,
     extSpotifyDebugSwitchAtom,
     tokenExpireAtom,
+    amllFontSizeAtom,
 } from "./settings"
 import { atomWithStorage } from "jotai/utils";
 import { type WritableAtom, atom, useAtom, useAtomValue, useStore } from "jotai";
@@ -43,6 +44,7 @@ export const ExtensionContext: FC = () => {
     const [extSpotifyInterpolationSwitch, setExtSpotifyInterpolationSwitch] = useAtom(extSpotifyInterpolationSwitchAtom);
     const [extSpotifyDebugSwitch, setExtSpotifyDebugSwitch] = useAtom(extSpotifyDebugSwitchAtom);
     const [tokenExpire, setTokenExpire] = useAtom(tokenExpireAtom);
+    const [amllFontSize, setAmllFontSize] = useAtom(amllFontSizeAtom);
 
     // Playing
     const [musicCover, setMusicCover] = useAtom<string>(extensionContext.amllStates.musicCoverAtom);
@@ -437,6 +439,18 @@ export const ExtensionContext: FC = () => {
         }
     }
 
+    // 挂载时设置css属性
+    useEffect(() => {
+        const storedFontSize = localStorage.getItem('amllFontSizeAtom');
+        if (storedFontSize === "null") {
+            consoleLog("INFO", "context", "(挂载时)未设置amllFontSize " + storedFontSize);
+        } else {
+            consoleLog("INFO", "context", "(挂载时)已设置amllFontSize " + storedFontSize);
+            const lyricPlayerElement = document.querySelector(".amll-lyric-player") as HTMLElement;
+            lyricPlayerElement.style.setProperty('--amll-lp-font-size', storedFontSize);
+        }
+    }, [])
+
     // 修复轮询在 Android 设备上的问题
     useEffect(() => {
         consoleLog("INFO", "context", "检测到功能开关变化 extSpotifySwitch:" + extSpotifySwitch);
@@ -453,7 +467,7 @@ export const ExtensionContext: FC = () => {
 
             return () => clearInterval(intervalId); // 清除定时器
         }
-    }, [extSpotifySwitch, extSpotifyDebugSwitch, extSpotifyInterpolationSwitch, extSpotifyDelaySwitch, extSpotifyInterval, extSpotifyDelay, extSpotifyInterpolationMax, extSpotifyInterpolationCalc, accessToken]);
+    }, [amllFontSize, extSpotifySwitch, extSpotifyDebugSwitch, extSpotifyInterpolationSwitch, extSpotifyDelaySwitch, extSpotifyInterval, extSpotifyDelay, extSpotifyInterpolationMax, extSpotifyInterpolationCalc, accessToken]);
 
     useEffect(() => {
         consoleLog("INFO", "context", "挂载成功");

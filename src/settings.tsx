@@ -140,6 +140,7 @@ export const SettingPage = () => {
     const [tokenExpire, setTokenExpire] = useAtom(tokenExpireAtom);
     const [updateAvailable, setUpdateAvailable] = useState(false);
     const store = useStore();
+    const [amllFontSize, setAmllFontSize] = useAtom(amllFontSizeAtom);
 
     const accessToken = extSpotifyAccessToken;
 
@@ -147,19 +148,36 @@ export const SettingPage = () => {
     const [onLyricLineClick, setOnLyricLineClick] = useAtom<any>(extensionContext.amllStates.onLyricLineClickAtom);
     const [onRequestNextSong, setOnRequestNextSong] = useAtom<any>(extensionContext.amllStates.onRequestNextSongAtom);
 
+    // 设置AMLL Font Size
+    function setAmllFontSizeFunc(setting: string) {
+
+        // const lyricPlayerElement = getComputedStyle(document.querySelector(".amll-lyric-player"));
+        // console.log(lyricPlayerElement.getPropertyValue('--amll-lp-font-size'));
+        const lyricPlayerElement = document.querySelector(".amll-lyric-player") as HTMLElement;
+        if (setting === "null") {
+            consoleLog("INFO", "settings", "未设置amllFontSize " + setting);
+            setAmllFontSize(setting);
+            lyricPlayerElement.style.setProperty('--amll-lp-font-size', '');
+        } else {
+            consoleLog("INFO", "settings", "已设置amllFontSize " + setting);
+            setAmllFontSize(setting);
+            lyricPlayerElement.style.setProperty('--amll-lp-font-size', setting);
+        }
+    }
+
     // Debug
-    function clickDebug(){
+    function clickDebug() {
         const toEmitThread = (type) => ({
-			onEmit() {
-				console.log(type);
-			},
-		});
+            onEmit() {
+                console.log(type);
+            },
+        });
         console.log(onClickRightFunctionButton);
         console.log(onLyricLineClick);
         console.log(onRequestNextSong);
         store.set(extensionContext.amllStates.onRequestNextSongAtom, toEmitThread("OK"));
-		store.set(extensionContext.amllStates.onRequestPrevSongAtom, toEmitThread("OK"));
-		store.set(extensionContext.amllStates.onPlayOrResumeAtom, toEmitThread("OK"));
+        store.set(extensionContext.amllStates.onRequestPrevSongAtom, toEmitThread("OK"));
+        store.set(extensionContext.amllStates.onPlayOrResumeAtom, toEmitThread("OK"));
     }
 
     // 检查更新信息
@@ -458,6 +476,21 @@ export const SettingPage = () => {
                 </Flex>
             </Card>
 
+            <Card mt="2">
+                <Flex direction="row" align="center" gap="4" my="2">
+                    <Flex direction="column" flexGrow="1">
+                        <Text as="div">AMLL Font Size</Text>
+                        <Text as="div" color="gray" size="2" >
+                            输入null即恢复默认设置, 本设置等价于--amll-lp-font-size: 你的设置;
+                        </Text>
+                    </Flex>
+                    <TextField.Root
+                        value={amllFontSize}
+                        onChange={(e) => setAmllFontSizeFunc(e.currentTarget.value)}
+                    />
+                </Flex>
+            </Card>
+
             <Button m="2" onClick={() => window.open(extSpotifyUpdSrc)}>
                 前往插件Release页面
             </Button>
@@ -471,7 +504,7 @@ export const SettingPage = () => {
             />
 
             <Button m="2" onClick={() => clickDebug()}>
-                currentDebug
+                toEmit
             </Button>
 
             <Text as="div">extSpotify</Text>
@@ -595,6 +628,14 @@ export const extSpotifyProxyAtom = atomWithStorage(
 export const tokenExpireAtom = atomWithStorage(
     "tokenExpireAtom",
     1,
+);
+
+/**
+ * AMLL Font Size
+ */
+export const amllFontSizeAtom = atomWithStorage(
+    "amllFontSizeAtom",
+    "null",
 );
 
 // ======================== extSpotify 使用的Player Atom ========================
